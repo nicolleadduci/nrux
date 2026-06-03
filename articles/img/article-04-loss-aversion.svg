@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="a04-bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#6c5cae"/>
+      <stop offset="1" stop-color="#553c8b"/>
+    </linearGradient>
+    <radialGradient id="a04-orb-pink" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#e0a5d3" stop-opacity="0.85"/>
+      <stop offset="0.55" stop-color="#e0a5d3" stop-opacity="0.18"/>
+      <stop offset="1"   stop-color="#e0a5d3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a04-orb-purple" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#a89af0" stop-opacity="0.75"/>
+      <stop offset="0.5" stop-color="#a89af0" stop-opacity="0.18"/>
+      <stop offset="1"   stop-color="#a89af0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a04-orb-aqua" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#9bc8e8" stop-opacity="0.5"/>
+      <stop offset="1"  stop-color="#9bc8e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="a04-card-1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"  stop-color="#d3a8d2"/>
+      <stop offset="1"  stop-color="#b5a3ee"/>
+    </linearGradient>
+    <linearGradient id="a04-card-2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"  stop-color="#bda6e7"/>
+      <stop offset="1"  stop-color="#9bc8e8"/>
+    </linearGradient>
+    <filter id="a04-grain" x="0" y="0">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="19"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#a04-bg)"/>
+  <circle cx="1280" cy="240" r="440" fill="url(#a04-orb-pink)"/>
+  <circle cx="240"  cy="780" r="440" fill="url(#a04-orb-purple)"/>
+  <circle cx="900"  cy="200" r="180" fill="url(#a04-orb-aqua)"/>
+
+  <g transform="translate(500 180) rotate(-10)">
+    <rect width="420" height="540" rx="36" fill="url(#a04-card-1)" stroke="rgba(255,255,255,0.46)" stroke-width="2" opacity="0.94"/>
+  </g>
+  <g transform="translate(960 480) rotate(14)">
+    <rect width="280" height="360" rx="28" fill="url(#a04-card-2)" stroke="rgba(255,255,255,0.4)" stroke-width="2" opacity="0.92"/>
+  </g>
+
+  <rect width="1600" height="1000" filter="url(#a04-grain)" opacity="0.5"/>
+</svg>

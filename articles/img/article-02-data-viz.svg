@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="a02-bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#5e58a8"/>
+      <stop offset="1" stop-color="#5a4b9a"/>
+    </linearGradient>
+    <radialGradient id="a02-orb-aqua" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#9bc8e8" stop-opacity="0.85"/>
+      <stop offset="0.55" stop-color="#9bc8e8" stop-opacity="0.18"/>
+      <stop offset="1"   stop-color="#9bc8e8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a02-orb-purple" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#a89af0" stop-opacity="0.7"/>
+      <stop offset="1"  stop-color="#a89af0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a02-orb-pink" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#e0a5d3" stop-opacity="0.45"/>
+      <stop offset="1"  stop-color="#e0a5d3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="a02-bar-1" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#9bc8e8"/>
+      <stop offset="1" stop-color="#cae0ec"/>
+    </linearGradient>
+    <linearGradient id="a02-bar-2" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#b9aaf0"/>
+      <stop offset="1" stop-color="#dcd2f4"/>
+    </linearGradient>
+    <linearGradient id="a02-bar-3" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#d5a4cd"/>
+      <stop offset="1" stop-color="#ebcfe6"/>
+    </linearGradient>
+    <filter id="a02-grain" x="0" y="0">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#a02-bg)"/>
+  <circle cx="1280" cy="220" r="440" fill="url(#a02-orb-aqua)"/>
+  <circle cx="280"  cy="780" r="380" fill="url(#a02-orb-purple)"/>
+  <circle cx="350"  cy="280" r="200" fill="url(#a02-orb-pink)"/>
+
+  <!-- Three soft bars / cards in a row -->
+  <g transform="translate(420 320)">
+    <rect width="170" height="420" rx="28" fill="url(#a02-bar-1)" stroke="rgba(255,255,255,0.4)" stroke-width="2" opacity="0.95"/>
+  </g>
+  <g transform="translate(640 220)">
+    <rect width="170" height="520" rx="28" fill="url(#a02-bar-2)" stroke="rgba(255,255,255,0.45)" stroke-width="2" opacity="0.95"/>
+  </g>
+  <g transform="translate(860 400)">
+    <rect width="170" height="340" rx="28" fill="url(#a02-bar-3)" stroke="rgba(255,255,255,0.4)" stroke-width="2" opacity="0.92"/>
+  </g>
+
+  <rect width="1600" height="1000" filter="url(#a02-grain)" opacity="0.5"/>
+</svg>

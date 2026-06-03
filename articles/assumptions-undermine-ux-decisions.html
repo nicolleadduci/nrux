@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assumptions Undermine UX Decisions · Nicolle Rodrigues</title>
+  <meta name="description" content="Cognitive biases like the false-consensus effect silently shape product decisions and cost you users. Here&#x27;s how to bridge the gap between assumptions and reality with adaptive modeling, authentic social proof, and the Peak-End Rule." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js" defer></script>
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       DESIGN TOKENS — same brand as the homepage and project pages
+       ══════════════════════════════════════════════════════════════ */
+    /* Per-article hero ACCENT variation — keep it on the homepage palette.
+       To vary another article, only shift these three orb hues (e.g. lead with
+       blue: 220, lead with pink: 320). Base lavender stays. */
+    :root {
+      --color-bg:            oklch(0.58 0.12 285);
+      --color-bg-2:          oklch(0.48 0.14 290);
+      --color-surface:       oklch(1 0 0 / 0.08);
+      --color-surface-solid: oklch(0.96 0.02 285);
+      --color-text:          oklch(0.98 0.005 285);
+      --color-text-muted:    oklch(0.92 0.02 285 / 0.72);
+      --color-text-ink:      oklch(0.18 0.06 280);
+      --color-text-ink-muted:oklch(0.40 0.05 280);
+      --color-border:        oklch(1 0 0 / 0.18);
+      --color-border-strong: oklch(1 0 0 / 0.32);
+      --color-border-ink:    oklch(0 0 0 / 0.08);
+      --color-rule-ink:      oklch(0 0 0 / 0.12);
+      --color-accent:        oklch(0.5  0.12 280);
+
+      --orb-1: oklch(0.72 0.18 265);   /* purple */
+      --orb-2: oklch(0.78 0.14 320);   /* pink */
+      --orb-3: oklch(0.82 0.14 220);   /* aqua */
+
+      --font-display: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-body:    "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+      --radius-sm:   10px;
+      --radius-md:   18px;
+      --radius-lg:   28px;
+      --radius-full: 999px;
+
+      --ease-out:  cubic-bezier(0.2, 0.7, 0.2, 1);
+      --dur-fast:  180ms;
+      --dur-med:   360ms;
+      --dur-slow:  700ms;
+
+      --max-w: 1200px;
+      --gutter: clamp(20px, 4vw, 56px);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       RESET
+       ══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
+    /* ══════════════════════════════════════════════════════════════
+       BACKDROP + ORBS
+       ══════════════════════════════════════════════════════════════ */
+    .global-backdrop {
+      position: fixed; inset: 0; z-index: -2;
+      background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-2) 100%);
+    }
+    .orb-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; }
+    .orb-1 { width: 600px; height: 600px; top: -10%; left: -10%; background: var(--orb-1); animation: drift1 22s ease-in-out infinite; }
+    .orb-2 { width: 500px; height: 500px; top: 30%; right: -8%; background: var(--orb-2); animation: drift2 26s ease-in-out infinite; }
+    .orb-3 { width: 420px; height: 420px; bottom: 10%; left: 30%; background: var(--orb-3); animation: drift3 30s ease-in-out infinite; }
+    @keyframes drift1 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(40px,-30px)} 66%{transform:translate(-20px,20px)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-30px,40px)} 66%{transform:translate(25px,-15px)} }
+    @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} }
+
+    /* ══════════════════════════════════════════════════════════════
+       NAV
+       ══════════════════════════════════════════════════════════════ */
+    header.site-nav {
+      position: fixed; top: 16px; left: 0; right: 0; z-index: 50;
+      padding: 0 var(--gutter);
+    }
+    .nav-pill {
+      max-width: var(--max-w); margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 8px 8px 16px;
+      background: oklch(1 0 0 / 0.1);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid oklch(1 0 0 / 0.22);
+      border-radius: var(--radius-full);
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.18), 0 8px 32px oklch(0 0 0 / 0.18);
+    }
+    .nav-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 0 6px;
+    }
+    .nav-mark {
+      width: 34px; height: 34px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, oklch(0.65 0.16 275), oklch(0.58 0.16 320));
+      border: 1px solid oklch(1 0 0 / 0.5);
+      color: oklch(1 0 0 / 0.98);
+      font-family: var(--font-display); font-size: 16px; font-weight: 600;
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.5);
+    }
+    .nav-name {
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(0.38 0.05 280 / 0.85);
+    }
+    .nav-center { display: flex; align-items: center; gap: 2px; }
+    .nav-right  { display: flex; align-items: center; gap: 8px; }
+    .nav-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 8px 14px; border-radius: var(--radius-full);
+      font-size: 13.5px; font-weight: 500; color: var(--color-text-muted);
+      transition: all var(--dur-fast) var(--ease-out);
+    }
+    .nav-link:hover { color: var(--color-text); background: oklch(1 0 0 / 0.1); }
+    .nav-dot {
+      display: inline-block; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--orb-1);
+      margin-left: 2px;
+    }
+    .nav-icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.1);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      transition: all var(--dur-fast) var(--ease-out);
+    }
+    .nav-icon-btn:hover { background: oklch(1 0 0 / 0.18); color: var(--color-text); }
+    .nav-cta {
+      padding: 9px 18px; border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.95); color: oklch(0.22 0.06 280);
+      font-size: 13.5px; font-weight: 500;
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.8), 0 4px 16px oklch(0 0 0 / 0.15);
+      transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+      display: inline-flex; align-items: center;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.8), 0 8px 24px oklch(0 0 0 / 0.2); }
+    .cta-short { display: none; }
+    @media (max-width: 880px) {
+      .nav-center, .nav-name, .nav-icon-btn { display: none; }
+      .cta-long  { display: none; }
+      .cta-short { display: inline; }
+    }
+
+    /* ── Nav scroll state: when over the LIGHT body section,
+       swap text to deep purple so it stays legible. ─────────── */
+    header.site-nav.on-light .nav-pill {
+      background: oklch(1 0 0 / 0.78);
+      border-color: oklch(0.22 0.06 280 / 0.12);
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.7), 0 8px 32px oklch(0 0 0 / 0.08);
+    }
+    header.site-nav.on-light .nav-name,
+    header.site-nav.on-light .nav-link { color: oklch(0.22 0.06 280); }
+    header.site-nav.on-light .nav-link:hover { background: oklch(0.22 0.06 280 / 0.06); }
+    header.site-nav.on-light .nav-icon-btn {
+      background: oklch(0.22 0.06 280 / 0.04);
+      border-color: oklch(0.22 0.06 280 / 0.12);
+      color: oklch(0.35 0.06 280);
+    }
+    header.site-nav.on-light .nav-icon-btn:hover {
+      background: oklch(0.22 0.06 280 / 0.08); color: oklch(0.22 0.06 280);
+    }
+    header.site-nav .nav-pill,
+    header.site-nav .nav-name,
+    header.site-nav .nav-link,
+    header.site-nav .nav-icon-btn,
+    header.site-nav .nav-cta {
+      transition: background var(--dur-med), color var(--dur-med), border-color var(--dur-med), box-shadow var(--dur-med);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       HERO — lavender, eyebrow + title + excerpt + author chip
+       ══════════════════════════════════════════════════════════════ */
+    section.article-hero {
+      padding: 160px var(--gutter) 96px;
+    }
+    /* Aligns to the same left edge as the body grid below (1200px centered).
+       Title/excerpt have their own measure caps so they don't sprawl. */
+    .article-hero-inner { max-width: var(--max-w); margin: 0 auto; }
+
+    .article-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 6px 14px 6px 12px;
+      border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.1);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 28px;
+    }
+    .article-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orb-1);
+      box-shadow: 0 0 12px var(--orb-1);
+    }
+    .article-eyebrow .sep { opacity: 0.5; }
+
+    h1.article-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(2rem, 5.5vw, 4.4rem);
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+      max-width: 22ch;
+    }
+
+    .article-excerpt {
+      margin-top: 28px;
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+      line-height: 1.5;
+      letter-spacing: -0.012em;
+      color: var(--color-text-muted);
+      max-width: 56ch;
+    }
+
+    .article-author {
+      margin-top: 40px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .article-author-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, oklch(0.7 0.18 265), oklch(0.78 0.16 320));
+      border: 1px solid oklch(1 0 0 / 0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 600;
+      font-size: 14px; color: oklch(1 0 0 / 0.95);
+      box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.4);
+    }
+    .article-author-meta { display: flex; flex-direction: column; gap: 2px; }
+    .article-author-name {
+      font-size: 14px; font-weight: 500;
+      color: var(--color-text);
+    }
+    .article-author-role {
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+
+
+    /* ══════════════════════════════════════════════════════════════
+       READING BODY — light theme, two-column grid with sticky TOC
+       ══════════════════════════════════════════════════════════════ */
+    section.article-body {
+      background: var(--color-surface-solid);
+      color: var(--color-text-ink);
+      padding: 80px var(--gutter) 120px;
+      position: relative;
+    }
+
+    .body-grid {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 80px;
+      align-items: start;
+    }
+
+    /* Article prose */
+    .prose {
+      max-width: 680px;
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 1.78;
+      color: var(--color-text-ink);
+    }
+    .prose .lede {
+      font-size: 21px;
+      line-height: 1.55;
+      font-weight: 400;
+      color: oklch(0.28 0.05 280);
+      margin-bottom: 36px;
+      letter-spacing: -0.012em;
+    }
+    .prose p { margin-bottom: 22px; }
+    .prose p:last-child { margin-bottom: 0; }
+
+    .prose h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+      color: oklch(0.18 0.06 280);
+      margin-top: 56px;
+      margin-bottom: 20px;
+      scroll-margin-top: 120px;     /* offset for sticky nav when jumping */
+    }
+    .prose h2:first-of-type { margin-top: 40px; }
+
+    .prose ul {
+      list-style: none;
+      margin: 0 0 22px 0;
+      padding: 0;
+    }
+    .prose ul li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 12px;
+      line-height: 1.65;
+    }
+    .prose ul li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0.7em;
+      width: 8px; height: 1px;
+      background: var(--color-accent);
+      opacity: 0.6;
+    }
+
+    .prose .pull-quote {
+      margin: 36px 0;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, oklch(0.92 0.04 285), oklch(0.94 0.03 320));
+      border-left: 3px solid var(--orb-1);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-family: var(--font-display);
+      font-size: 17px;
+      line-height: 1.55;
+      font-style: italic;
+      color: var(--color-text-ink);
+    }
+    .prose .pull-quote strong { font-style: normal; font-weight: 600; color: oklch(0.18 0.06 280); }
+
+    /* Sticky TOC */
+    aside.toc {
+      position: sticky;
+      top: 120px;
+      align-self: start;
+    }
+    .toc-card {
+      padding: 20px 22px;
+      background: oklch(1 0 0 / 0.7);
+      border: 1px solid var(--color-border-ink);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .toc-title {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-ink-muted);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-rule-ink);
+    }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .toc-list a {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--color-text-ink-muted);
+      transition: color var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+      border-left: 2px solid transparent;
+    }
+    .toc-list a:hover {
+      color: oklch(0.2 0.07 280);
+      background: oklch(0 0 0 / 0.03);
+    }
+    .toc-list a.active {
+      color: oklch(0.18 0.07 280);
+      background: oklch(0 0 0 / 0.04);
+      border-left-color: var(--orb-1);
+      font-weight: 500;
+    }
+    .toc-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--color-text-ink-muted);
+      flex-shrink: 0;
+      min-width: 18px;
+    }
+    .toc-progress {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-rule-ink);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-ink-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .toc-progress-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 999px;
+      background: oklch(0 0 0 / 0.08);
+      overflow: hidden;
+    }
+    .toc-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--orb-1), var(--orb-2));
+      transition: width 120ms linear;
+    }
+
+    /* Mobile: hide TOC entirely so reading takes full width */
+    @media (max-width: 960px) {
+      .body-grid { grid-template-columns: 1fr; gap: 32px; }
+      aside.toc { display: none; }
+      .prose h2:first-of-type { margin-top: 20px; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       END OF ARTICLE BLOCK
+       ══════════════════════════════════════════════════════════════ */
+    section.article-cta {
+      padding: 80px var(--gutter) 100px;
+    }
+    .cta-card {
+      max-width: 880px; margin: 0 auto;
+      padding: clamp(32px, 5vw, 56px);
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      text-align: center;
+    }
+    .cta-eyebrow {
+      display: inline-flex;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 16px;
+    }
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .cta-body {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-text-muted);
+      max-width: 48ch;
+      margin: 0 auto 28px;
+    }
+    .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+    }
+    .cta-btn-primary {
+      background: oklch(0.22 0.06 280); color: oklch(0.98 0.01 285);
+      box-shadow: 0 4px 16px oklch(0 0 0 / 0.18);
+    }
+    .cta-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px oklch(0 0 0 / 0.28);
+    }
+    /* hover handled above */
+    .cta-btn-ghost {
+      background: oklch(1 0 0 / 0.08); color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+    .cta-btn-ghost:hover { background: oklch(1 0 0 / 0.14); }
+
+    /* ── Arrow rolling animation (GLOBAL) ──
+       Default: arrow A visible, arrow B parked below the clip box.
+       Triggers on the DIRECT parent (button or link) that contains
+       .arrow-roll — A rolls up and out, B rolls in from below.
+       Uses :has() so the rule is universal: ANY button/link wrapping
+       an .arrow-roll gets the animation automatically. */
+    .arrow-roll {
+      position: relative;
+      display: inline-block;
+      width: 14px; height: 14px;
+      overflow: hidden;
+      vertical-align: -2px;
+      flex-shrink: 0;
+    }
+    .arrow-roll svg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      transition: transform 380ms cubic-bezier(0.6, 0.05, 0.2, 1);
+    }
+    .arrow-roll .arrow-a { transform: translate3d(0, 0, 0); }
+    .arrow-roll .arrow-b { transform: translate3d(0, 110%, 0); }
+    *:has(> .arrow-roll):hover .arrow-roll .arrow-a,
+    *:has(> .arrow-roll):focus-visible .arrow-roll .arrow-a {
+      transform: translate3d(0, -110%, 0);
+    }
+    *:has(> .arrow-roll):hover .arrow-roll .arrow-b,
+    *:has(> .arrow-roll):focus-visible .arrow-roll .arrow-b {
+      transform: translate3d(0, 0, 0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .arrow-roll svg { transition: none; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       CONTACT BLOCK — mirrors the homepage form & gravity pills
+       ══════════════════════════════════════════════════════════════ */
+    section.contact-block {
+      padding: 80px var(--gutter) 0;
+      position: relative;
+    }
+    .contact-inner {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+    @media (max-width: 880px) { .contact-inner { grid-template-columns: 1fr; gap: 32px; } }
+
+    .contact-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 12px 5px 10px;
+      border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.08);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 22px;
+    }
+    .contact-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orb-1);
+    }
+    .contact-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+      color: var(--color-text);
+      margin-bottom: 18px;
+    }
+    .contact-heading em {
+      font-style: italic;
+      background: linear-gradient(120deg, oklch(0.92 0.08 285), oklch(0.86 0.14 320), oklch(0.88 0.12 220));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+      padding-right: 0.18em;
+    }
+    .contact-sub {
+      font-size: 16px; line-height: 1.6;
+      color: var(--color-text-muted);
+      max-width: 40ch;
+    }
+    .contact-aside-note {
+      margin-top: 24px;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .contact-aside-note a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: oklch(1 0 0 / 0.7);
+      font-weight: 500;
+      transition: text-decoration-color var(--dur-fast);
+    }
+    .contact-aside-note a:hover { text-decoration-color: oklch(1 0 0); }
+
+    /* ── Form: exact homepage styling ──
+       Transparent inputs with a single bottom rule, larger display type,
+       deep-navy primary button, mono LinkedIn note inline with the submit. */
+    .contact-form {
+      display: flex; flex-direction: column;
+      gap: 28px; max-width: 36rem;
+    }
+    .contact-form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    }
+    @media (max-width: 560px) {
+      .contact-form { gap: 22px; }
+      .contact-form-grid { grid-template-columns: 1fr; gap: 22px; }
+    }
+    .contact-field {
+      display: flex; flex-direction: column; gap: 6px; position: relative;
+    }
+    .contact-field > span {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(1 0 0 / 0.92);
+    }
+    .contact-field input,
+    .contact-field textarea {
+      width: 100%;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid oklch(1 0 0 / 0.5);
+      border-radius: 0;
+      padding: 8px 0 10px;
+      color: var(--color-text);
+      font-family: var(--font-display);
+      font-size: 18px; line-height: 1.4; letter-spacing: -0.01em;
+      transition: border-color var(--dur-med) var(--ease-out);
+      outline: none;
+      resize: none;
+    }
+    .contact-field textarea {
+      font-family: var(--font-body);
+      font-size: 16px; line-height: 1.55; min-height: 84px;
+    }
+    .contact-field input::placeholder,
+    .contact-field textarea::placeholder {
+      color: oklch(1 0 0 / 0.7); font-weight: 400;
+    }
+    .contact-field input:focus,
+    .contact-field textarea:focus { border-bottom-color: oklch(1 0 0); }
+    .contact-field input:focus::placeholder,
+    .contact-field textarea:focus::placeholder { color: oklch(1 0 0 / 0.6); }
+
+    .contact-form-actions {
+      display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+      gap: 18px; margin-top: 4px;
+    }
+    .contact-form-actions .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .contact-form-note {
+      margin-left: auto;
+      text-align: right;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: oklch(1 0 0 / 0.92);
+    }
+    .contact-form-note a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: oklch(1 0 0 / 0.7);
+      font-weight: 500;
+      transition: text-decoration-color var(--dur-fast);
+    }
+    .contact-form-note a:hover { text-decoration-color: oklch(1 0 0); }
+
+    /* Primary submit button — matches homepage btn-primary */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 500;
+      background: oklch(0.22 0.06 280);
+      color: oklch(0.98 0.005 285);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid oklch(0.22 0.06 280);
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.1),
+                  0 10px 30px -10px oklch(0.2 0.1 280 / 0.4);
+      cursor: pointer;
+      transition: background var(--dur-fast), transform var(--dur-fast);
+    }
+    .btn-primary:hover {
+      background: oklch(0.3 0.08 280);
+      transform: translateY(-1px);
+    }
+
+    /* ── Gravity pills stage ──
+       In document flow below the form (preserves the v5 form layout).
+       overflow: visible lets pills be seen above the stage box as they
+       fall in. pointer-events stays AUTO so Matter's mouse handler can
+       track drags smoothly even when the cursor moves into empty space
+       within the stage box. */
+    .pills-stage {
+      position: relative;
+      max-width: var(--max-w);     /* matches body content width */
+      width: 100%;
+      height: 260px;
+      margin: 48px auto 0;          /* center horizontally inside contact-block */
+      overflow: visible;
+      z-index: 3;
+    }
+    .gravity-pill {
+      position: absolute;
+      left: 0; top: 0;
+      pointer-events: auto;
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(18px, 2vw, 26px);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      user-select: none;
+      border: 1px solid oklch(1 0 0 / 0.4);
+      box-shadow:
+        0 10px 24px -8px oklch(0.15 0.08 280 / 0.45),
+        inset 0 1px 0 0 oklch(1 0 0 / 0.3);
+      touch-action: none;
+      will-change: transform;
+      visibility: hidden;     /* shown by JS after first physics tick */
+    }
+    .gravity-pill:active { cursor: grabbing; }
+    .gravity-pill-0 {
+      background: var(--color-text-ink);
+      color: var(--color-text);
+      border-color: oklch(1 0 0 / 0.22);
+    }
+    .gravity-pill-1 {
+      background: oklch(1 0 0 / 0.95);
+      color: var(--color-text-ink);
+      border-color: oklch(1 0 0 / 0.6);
+    }
+    .gravity-pill-2 {
+      background: oklch(0.78 0.16 270);
+      color: oklch(0.18 0.06 280);
+      border-color: oklch(1 0 0 / 0.5);
+    }
+    .gravity-pill-3 {
+      background: oklch(0.85 0.14 320);
+      color: oklch(0.18 0.06 280);
+      border-color: oklch(1 0 0 / 0.5);
+    }
+    @media (max-width: 560px) {
+      .gravity-pill { padding: 10px 18px; font-size: 16px; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════════ */
+    footer.site-footer {
+      padding: 28px var(--gutter);
+      border-top: 1px solid var(--color-border);
+      background: oklch(1 0 0 / 0.04);
+    }
+    .footer-row {
+      max-width: var(--max-w); margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+    .footer-brand { display: inline-flex; align-items: center; gap: 12px; }
+    .footer-mark {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, oklch(0.65 0.16 275), oklch(0.58 0.16 320));
+      border: 1px solid oklch(1 0 0 / 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 12px; font-weight: 600;
+      color: oklch(1 0 0 / 0.95);
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+    :focus-visible { outline: 2px solid var(--orb-1); outline-offset: 3px; border-radius: 4px; }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal[data-stagger="1"] { transition-delay: 80ms; }
+    .reveal[data-stagger="2"] { transition-delay: 160ms; }
+    .reveal[data-stagger="3"] { transition-delay: 240ms; }
+  </style>
+</head>
+
+<body>
+  <!-- BACKDROP ─────────────────────────────────────────────── -->
+  <div class="global-backdrop" aria-hidden="true"></div>
+  <div class="orb-layer" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- NAV — mirrors the homepage nav ─────────────────────── -->
+  <header class="site-nav">
+    <nav class="nav-pill" aria-label="Primary">
+      <a href="/" class="nav-logo" aria-label="Nicolle Rodrigues home">
+        <span class="nav-mark">N</span>
+        <span class="nav-name">Nicolle R.</span>
+      </a>
+      <div class="nav-center">
+        <a href="/#about" class="nav-link">About</a>
+        <a href="/#projects" class="nav-link">Projects</a>
+        <a href="/#library" class="nav-link">AI Library<span class="nav-dot" aria-hidden="true"></span></a>
+        <a href="/#articles" class="nav-link">Articles</a>
+        <a href="/#contact" class="nav-link">Contact</a>
+      </div>
+      <div class="nav-right">
+        <a href="mailto:nicolleadduci@gmail.com" class="nav-icon-btn" aria-label="Email">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="2" y="3.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M2.5 4.5L8 9L13.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <a href="/#contact" class="nav-cta">
+          <span class="cta-long">Book a 30 min call</span>
+          <span class="cta-short">Book call</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HERO ────────────────────────────────────────────── -->
+    <section class="article-hero">
+      <div class="article-hero-inner">
+        <div class="article-eyebrow reveal">
+          <span class="dot"></span>
+          <span>User Experience</span>
+          <span class="sep">·</span>
+          <span>January 15, 2025</span>
+          <span class="sep">·</span>
+          <span>7 min read</span>
+        </div>
+        <h1 class="article-title reveal" data-stagger="1">
+          Assumptions Undermine UX Decisions.</h1>
+        <p class="article-excerpt reveal" data-stagger="2">
+          Cognitive biases like the false-consensus effect silently shape product decisions and cost you users. Here's how to bridge the gap between assumptions and reality with adaptive modeling, authentic social proof, and the Peak-End Rule.</p>
+        <div class="article-author reveal" data-stagger="3">
+          <div class="article-author-avatar">N</div>
+          <div class="article-author-meta">
+            <span class="article-author-name">Nicolle Rodrigues</span>
+            <span class="article-author-role">UX Designer &amp; Design Engineer</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARTICLE BODY ────────────────────────────────────── -->
+    <section class="article-body">
+      <div class="body-grid">
+
+        <!-- PROSE -->
+        <article class="prose">
+
+          <p class="lede">Assumptions about customer behavior are often shaped by cognitive biases like the false-consensus effect, where we project our own perspectives onto our users. These biases lead to experiences that fail to align with user needs, resulting in disengaged customers and missed growth opportunities.</p>
+
+          <p>To bridge the gap between assumptions and reality, businesses must embrace strategies rooted in psychology and real user insights. By leveraging data-driven approaches, companies can design experiences that genuinely align with user needs and drive meaningful engagement.</p>
+
+          <h2 id="evolving-data">Users are evolving faster than your data</h2>
+          <p>Adaptive user modeling represents a shift from traditional, static approaches to a dynamic, evolving understanding of user behavior. By leveraging real-time data and AI-driven insights, businesses can detect even subtle changes in user preferences, staying ahead of evolving behaviors. This proactive approach enables UX teams to anticipate user needs rather than reacting to outdated information.</p>
+          <p>Traditional methods such as surveys and interviews provide only static snapshots, often missing rapid shifts in user expectations. In contrast, adaptive models offer a continuous learning cycle, ensuring experiences remain relevant, personalized, and aligned with real-time user behaviors. Amazon exemplifies this in e-commerce, leveraging user behavior, demand trends, and real-time data to tailor product recommendations and pricing dynamically.</p>
+
+          <h2 id="social-proof">Your social proof is failing to inspire trust</h2>
+          <p>Social proof goes beyond just product or service ratings and generic testimonials. Instead, it's about creating a meaningful connection with your audience. To stand out, businesses should curate authentic user stories that provide consumer insights. For example, instead of displaying a five-star review, a fitness app could feature a video of a user describing how they achieved their health goals with the app's personalized plans.</p>
+          <p>By presenting user stories in a genuine and unique way, businesses can make testimonials feel personal and relatable. Mixed media formats, such as videos, images, or social interactions, amplify this authenticity, showcasing diverse customer personas and experiences. This layered approach transforms generic validation into compelling narratives.</p>
+
+          <h2 id="familiarity-innovation">Users expect familiarity but crave innovation</h2>
+          <p>Innovating mental models requires balancing familiarity with innovation, introducing new features that align with user behaviors while subtly evolving their expectations. Netflix's auto-play feature exemplifies this approach, transforming how users interact with streaming content by automatically starting the next episode. This eliminated the friction of manual selection, creating a seamless, binge-friendly experience.</p>
+          <p>Ride-sharing apps like Uber have implemented dynamic pickup points, suggesting alternate locations that optimize efficiency while maintaining ease of use. By presenting these suggestions as helpful rather than disruptive, Uber subtly shifts user expectations, encouraging adaptation to a more efficient system.</p>
+
+          <h2 id="assumptions-cost">Your assumptions are costing you users</h2>
+          <p>Continuous feedback loops elevate UX design into an iterative, data-driven process where every update reflects user behavior and performance insights. This requires establishing a robust framework for experimentation, utilizing A/B testing, real-time analytics, and iterative design cycles to adapt quickly and effectively.</p>
+          <p>From the user's perspective, this approach delivers platforms that feel intuitive and seamless, whether it's a faster checkout, a more personalized product recommendation, or streamlined navigation. Each refinement enhances ease and efficiency, creating an experience that aligns naturally with user needs.</p>
+
+          <h2 id="peak-end">Apply the Peak-End Rule for intentional UX design</h2>
+          <p>The Peak-End Rule suggests that people evaluate an experience based on their most intense moments (peaks) and the conclusion (end), rather than the experience as a whole. In UX, this principle emphasizes designing memorable highs and satisfying conclusions to leave users with a positive impression.</p>
+          <p>Spotify's year-end &ldquo;Wrapped&rdquo; feature is a great example. By analyzing user's listening habits and presenting a personalized, visually engaging summary, Spotify creates a peak moment that users look forward to every year. According to Forbes, Wrapped was shared over 60 million times across social media platforms in 2022, and Apptopia reported app downloads increased by nearly 21% in the week following its launch.</p>
+
+          <h2 id="bridge-gap">Bridge the gap between assumptions and reality for UX success</h2>
+          <p>Creating meaningful user experiences requires moving beyond assumptions and embracing a data-driven, psychology-informed approach. UX techniques like adaptive user modeling, authentic social proof, redefined mental models, continuous feedback loops, and the Peak-End Rule help businesses design interactions that feel personal, intuitive, and engaging.</p>
+          <p>These strategies not only help eliminate cognitive biases but also align business goals with user needs, fostering stronger connections and lasting loyalty. Businesses that prioritize truly understanding their users will stand out in competitive markets, delivering experiences that drive sustained growth.</p>
+
+        </article>
+
+        <!-- TOC -->
+        <aside class="toc" aria-label="On this page">
+          <div class="toc-card">
+            <div class="toc-title">On this page</div>
+            <ol class="toc-list">
+              <li><a href="#evolving-data"><span class="toc-num">01</span><span>Users evolve faster than your data</span></a></li>
+              <li><a href="#social-proof"><span class="toc-num">02</span><span>Social proof isn't inspiring trust</span></a></li>
+              <li><a href="#familiarity-innovation"><span class="toc-num">03</span><span>Familiarity vs innovation</span></a></li>
+              <li><a href="#assumptions-cost"><span class="toc-num">04</span><span>Your assumptions cost you users</span></a></li>
+              <li><a href="#peak-end"><span class="toc-num">05</span><span>Apply the Peak-End Rule</span></a></li>
+              <li><a href="#bridge-gap"><span class="toc-num">06</span><span>Bridge the gap</span></a></li>
+            </ol>
+            <div class="toc-progress" aria-hidden="true">
+              <span id="progress-label">Read</span>
+              <div class="toc-progress-bar">
+                <div id="progress-fill" class="toc-progress-fill"></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- END OF ARTICLE CTA ──────────────────────────────── -->
+    <section class="article-cta">
+      <div class="cta-card reveal">
+        <div class="cta-eyebrow">Keep reading</div>
+        <h2 class="cta-title">More UX articles on psychology, data, and design.</h2>
+        <p class="cta-body">
+          From loss aversion to data-driven research methodology, browse the rest of the writing on UX, behavior, and design engineering.
+        </p>
+        <div class="cta-actions">
+          <a href="/#articles" class="cta-btn cta-btn-primary">
+            All articles
+            <span class="arrow-roll" aria-hidden="true">
+              <svg class="arrow-a" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="arrow-b" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT BLOCK + GRAVITY PILLS ───────────────────── -->
+    <section class="contact-block">
+      <div class="contact-inner">
+        <div>
+          <h2 class="contact-heading">Let&apos;s build something <em>worth shipping</em>.</h2>
+          <p class="contact-sub">
+            I lead with empathy and back it up with data. If you&apos;ve got a project that needs both, drop a note over there.
+          </p>
+        </div>
+        <form class="contact-form" id="contact-form" novalidate>
+          <div class="contact-form-grid">
+            <label class="contact-field">
+              <span>Name</span>
+              <input type="text" name="name" placeholder="Your name" autocomplete="name" required />
+            </label>
+            <label class="contact-field">
+              <span>Email</span>
+              <input type="email" name="email" placeholder="you@domain.com" autocomplete="email" required />
+            </label>
+          </div>
+          <label class="contact-field">
+            <span>Message</span>
+            <textarea name="message" rows="3" placeholder="Tell me about your project, timeline, scope, what you&apos;re hoping for." required></textarea>
+          </label>
+          <div class="contact-form-actions">
+            <button type="submit" class="btn-primary" id="contact-submit">
+              <span id="contact-submit-label">Send message</span>
+              <span class="arrow-roll" aria-hidden="true">
+                <svg class="arrow-a" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg class="arrow-b" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+            <span class="contact-form-note">
+              Or contact me on <a href="https://www.linkedin.com/in/nicolleadduci/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Gravity pills land on top of the footer ──────────── -->
+      <div class="pills-stage" id="pills-stage">
+        <div class="gravity-pill gravity-pill-0">AI-Enhanced</div>
+        <div class="gravity-pill gravity-pill-1">Human Centered</div>
+        <div class="gravity-pill gravity-pill-2">Data Driven</div>
+        <div class="gravity-pill gravity-pill-3">Accessibility</div>
+        <div class="gravity-pill gravity-pill-0">Adaptive Design</div>
+        <div class="gravity-pill gravity-pill-1">Design System</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER ──────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-row">
+      <div class="footer-brand">
+        <div class="footer-mark">N</div>
+        <span>Nicolle Rodrigues</span>
+      </div>
+      <span>© 2026 · UX Designer &amp; Design Engineer</span>
+      <span style="opacity: 0.6;">Built with Claude Code</span>
+    </div>
+  </footer>
+
+  <!-- SCROLL REVEAL + TOC ACTIVE STATE + PROGRESS BAR ────── -->
+  <script>
+    (function () {
+      // Reveal
+      const reveals = document.querySelectorAll(".reveal");
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("in")),
+        { threshold: 0, rootMargin: "0px 0px -10% 0px" }
+      );
+      reveals.forEach((el) => io.observe(el));
+      requestAnimationFrame(() => {
+        reveals.forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("in");
+        });
+      });
+
+      // TOC active state — highlight the section nearest the top of the viewport
+      const sections = Array.from(document.querySelectorAll(".prose h2[id]"));
+      const tocLinks = Array.from(document.querySelectorAll(".toc-list a"));
+      const linkById = new Map(tocLinks.map(a => [a.getAttribute("href").slice(1), a]));
+
+      function updateActive() {
+        const scrollY = window.scrollY + 160;   // adjust for sticky nav offset
+        let activeId = sections.length ? sections[0].id : null;
+        for (const sec of sections) {
+          if (sec.offsetTop <= scrollY) activeId = sec.id;
+          else break;
+        }
+        tocLinks.forEach(a => a.classList.remove("active"));
+        if (activeId && linkById.has(activeId)) linkById.get(activeId).classList.add("active");
+      }
+
+      // Reading progress bar — based on article body scroll
+      const articleBody = document.querySelector(".article-body");
+      const progressFill = document.getElementById("progress-fill");
+      function updateProgress() {
+        if (!articleBody || !progressFill) return;
+        const rect = articleBody.getBoundingClientRect();
+        const viewH = window.innerHeight;
+        const total = rect.height - viewH + 200;   // include some lead-in
+        const scrolled = -rect.top + 80;
+        const pct = Math.max(0, Math.min(1, scrolled / total));
+        progressFill.style.width = (pct * 100).toFixed(1) + "%";
+      }
+
+      let raf = 0;
+      function onScroll() {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          updateActive();
+          updateProgress();
+        });
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      updateActive();
+      updateProgress();
+
+      // ── Nav theme switch: white over hero, dark over light body ──
+      const nav = document.querySelector(".site-nav");
+      const bodySection = document.querySelector(".article-body");
+      function updateNavTheme() {
+        if (!nav || !bodySection) return;
+        const navBottom = 64;  /* nav sits ~16px from top, ~48px tall */
+        const bRect = bodySection.getBoundingClientRect();
+        const ctaSection = document.querySelector(".article-cta");
+        const ctaTop = ctaSection ? ctaSection.getBoundingClientRect().top : Infinity;
+        // On light when body is above nav AND contact block hasn't taken over yet
+        const onLight = bRect.top < navBottom && ctaTop > navBottom;
+        nav.classList.toggle("on-light", onLight);
+      }
+      window.addEventListener("scroll", updateNavTheme, { passive: true });
+      window.addEventListener("resize", updateNavTheme);
+      updateNavTheme();
+
+      // ── Contact form → Web3Forms ──
+      const form = document.getElementById("contact-form");
+      const submitBtn = document.getElementById("contact-submit");
+      const submitLabel = document.getElementById("contact-submit-label");
+      const WEB3FORMS_KEY = "3eb2e900-50bc-455b-bd28-373bd985f26f";
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const data = new FormData(form);
+          const name = (data.get("name") || "").toString().trim();
+          const email = (data.get("email") || "").toString().trim();
+          const message = (data.get("message") || "").toString().trim();
+          if (!name || !email || !message) return;
+          submitBtn.disabled = true;
+          submitLabel.textContent = "Sending…";
+          try {
+            const res = await fetch("https://api.web3forms.com/submit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({
+                access_key: WEB3FORMS_KEY,
+                subject: "[Portfolio · Article] " + name,
+                name, email, message,
+                from_name: "Article Contact Form",
+              }),
+            });
+            const json = await res.json();
+            if (json.success) {
+              submitLabel.textContent = "Message sent · thanks";
+              form.reset();
+            } else {
+              submitLabel.textContent = "Something went wrong";
+            }
+          } catch (err) {
+            submitLabel.textContent = "Something went wrong";
+          } finally {
+            setTimeout(() => { submitBtn.disabled = false; submitLabel.textContent = "Send message"; }, 2400);
+          }
+        });
+      }
+
+      // ── Gravity pills (Matter.js) — fall, settle, and drag-and-drop ──
+      function initPills() {
+        if (typeof Matter === "undefined") return;
+        const stage = document.getElementById("pills-stage");
+        if (!stage) return;
+        const pills = Array.from(stage.querySelectorAll(".gravity-pill"));
+        if (!pills.length) return;
+
+        const rect = stage.getBoundingClientRect();
+        const W = rect.width, H = rect.height;
+        if (W < 100) { setTimeout(initPills, 100); return; }
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          // Just lay them down statically in a row
+          pills.forEach((el, i) => {
+            el.style.position = "absolute";
+            el.style.visibility = "visible";
+            el.style.left = ((i + 0.5) * (W / pills.length) - el.offsetWidth / 2) + "px";
+            el.style.bottom = "12px";
+          });
+          return;
+        }
+
+        const M = Matter;
+        const engine = M.Engine.create();
+        engine.gravity.x = 0;
+        engine.gravity.y = 1;
+        const world = engine.world;
+
+        // Floor + side walls (kept thick + tall so nothing slips through).
+        M.World.add(world, [
+          M.Bodies.rectangle(W / 2, H + 25, W * 2, 50, { isStatic: true, friction: 1 }),
+          M.Bodies.rectangle(-25, H / 2, 50, H * 4, { isStatic: true, friction: 1 }),
+          M.Bodies.rectangle(W + 25, H / 2, 50, H * 4, { isStatic: true, friction: 1 }),
+        ]);
+
+        // ── Mouse drag (grab + drop) ──
+        // Matter.Mouse normally only fires while the cursor is over its
+        // element. That breaks drags when the cursor briefly outruns the
+        // pill or leaves the stage box. Fix: keep Matter's stage-bound
+        // listeners for mousedown/touchstart (where the grab originates),
+        // and add WINDOW-LEVEL mousemove + mouseup that keep mouse coords
+        // in sync no matter where the cursor goes. Coords are computed
+        // relative to the stage so they match Matter's world space.
+        const mouse = M.Mouse.create(stage);
+        const mouseConstraint = M.MouseConstraint.create(engine, {
+          mouse,
+          constraint: { stiffness: 0.18, damping: 0.1, render: { visible: false } },
+        });
+        M.World.add(world, mouseConstraint);
+        // Don't hijack the page scroll wheel when the cursor is over the stage.
+        mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
+        mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
+
+        // Global trackers so drags stay smooth outside the stage's box.
+        function syncMouseFromClient(clientX, clientY) {
+          const rect = stage.getBoundingClientRect();
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          mouse.absolute.x = x;
+          mouse.absolute.y = y;
+          mouse.position.x = x * mouse.scale.x + mouse.offset.x;
+          mouse.position.y = y * mouse.scale.y + mouse.offset.y;
+        }
+        window.addEventListener("mousemove", (ev) => {
+          syncMouseFromClient(ev.clientX, ev.clientY);
+          mouse.sourceEvents.mousemove = ev;
+        }, { passive: true });
+        window.addEventListener("mouseup", (ev) => {
+          syncMouseFromClient(ev.clientX, ev.clientY);
+          mouse.button = -1;
+          mouse.mouseupPosition.x = mouse.position.x;
+          mouse.mouseupPosition.y = mouse.position.y;
+          mouse.sourceEvents.mouseup = ev;
+        }, { passive: true });
+        window.addEventListener("touchmove", (ev) => {
+          if (!ev.touches.length) return;
+          const t = ev.touches[0];
+          syncMouseFromClient(t.clientX, t.clientY);
+          mouse.sourceEvents.mousemove = ev;
+        }, { passive: true });
+        window.addEventListener("touchend", (ev) => {
+          mouse.button = -1;
+          mouse.sourceEvents.mouseup = ev;
+        }, { passive: true });
+
+        // Build a body for each pill. Spawn just above the stage (in the
+        // small gap above it) — visible right away thanks to
+        // overflow: visible on the stage. They fall a short distance and
+        // settle inside the stage box.
+        const tracked = pills.map((el, i) => {
+          el.style.position = "absolute";
+          el.style.left = "0";
+          el.style.top = "0";
+          el.style.willChange = "transform";
+          el.style.visibility = "visible";
+          const w = el.offsetWidth, h = el.offsetHeight;
+          const startX = ((i + 0.5) / pills.length) * W + (Math.random() - 0.5) * 24;
+          const startY = -60 - i * 32;
+          const body = M.Bodies.rectangle(startX, startY, w, h, {
+            chamfer: { radius: h / 2 },
+            friction: 0.25,
+            frictionAir: 0.02,
+            restitution: 0.45,
+            density: 0.0018,
+            angle: (Math.random() - 0.5) * 0.6,
+          });
+          M.World.add(world, body);
+          return { el, body };
+        });
+
+        const runner = M.Runner.create();
+        M.Runner.run(runner, engine);
+
+        function syncDom() {
+          tracked.forEach(({ el, body }) => {
+            const x = body.position.x - el.offsetWidth / 2;
+            const y = body.position.y - el.offsetHeight / 2;
+            el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${body.angle}rad)`;
+          });
+          requestAnimationFrame(syncDom);
+        }
+        requestAnimationFrame(syncDom);
+
+        // Re-wake the simulation when window resizes (rough — we just re-pour)
+        window.addEventListener("resize", () => {
+          tracked.forEach(({ body }, i) => {
+            const startX = ((i + 0.5) / tracked.length) * stage.clientWidth + (Math.random() - 0.5) * 24;
+            M.Body.setPosition(body, { x: startX, y: -60 - i * 32 });
+            M.Body.setVelocity(body, { x: 0, y: 0 });
+            M.Body.setAngularVelocity(body, 0);
+          });
+        }, { passive: true });
+      }
+      // Defer the entire physics setup until the pills stage scrolls into
+      // view. This way pills drop in on arrival instead of having already
+      // settled by the time you reach the bottom of the page.
+      function armPillsObserver() {
+        const stage = document.getElementById("pills-stage");
+        if (!stage) return;
+        let started = false;
+        const trigger = () => {
+          if (started) return;
+          started = true;
+          initPills();
+        };
+        // Fallback: if IntersectionObserver isn't available, just init now.
+        if (typeof IntersectionObserver === "undefined") { trigger(); return; }
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some(e => e.isIntersecting)) {
+            trigger();
+            io.disconnect();
+          }
+        }, { threshold: 0.1, rootMargin: "0px 0px -10% 0px" });
+        io.observe(stage);
+        // Safety net: if the stage is already in view on load, fire now.
+        const r = stage.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) trigger();
+      }
+      if (document.readyState === "complete") armPillsObserver();
+      else window.addEventListener("load", armPillsObserver);
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,3 +1,9 @@
 .DS_Store
 .vercel
 node_modules
+.DS_Store
+Archive/
+.update-*.py
+.build-*.py
+*-v[1-9]*.html
+Individual Projects/

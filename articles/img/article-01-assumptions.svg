@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="a01-bg" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#6e60af"/>
+      <stop offset="1" stop-color="#4f3f96"/>
+    </linearGradient>
+    <radialGradient id="a01-orb-purple" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#a89af0" stop-opacity="0.85"/>
+      <stop offset="0.6" stop-color="#a89af0" stop-opacity="0.18"/>
+      <stop offset="1"   stop-color="#a89af0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a01-orb-aqua" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#9bc8e8" stop-opacity="0.7"/>
+      <stop offset="1"  stop-color="#9bc8e8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="a01-orb-pink" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"  stop-color="#e0a5d3" stop-opacity="0.65"/>
+      <stop offset="1"  stop-color="#e0a5d3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="a01-card-1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"  stop-color="#c2b5ef"/>
+      <stop offset="0.55" stop-color="#dab3e0"/>
+      <stop offset="1"  stop-color="#a9c1e8"/>
+    </linearGradient>
+    <linearGradient id="a01-card-2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"  stop-color="#bcd6ea"/>
+      <stop offset="1"  stop-color="#bda6e7"/>
+    </linearGradient>
+    <filter id="a01-grain" x="0" y="0">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#a01-bg)"/>
+  <circle cx="280"  cy="220" r="430" fill="url(#a01-orb-purple)"/>
+  <circle cx="1300" cy="780" r="380" fill="url(#a01-orb-aqua)"/>
+  <circle cx="1280" cy="180" r="220" fill="url(#a01-orb-pink)"/>
+
+  <g transform="translate(580 200) rotate(-9)">
+    <rect width="380" height="500" rx="34" fill="url(#a01-card-1)" stroke="rgba(255,255,255,0.45)" stroke-width="2" opacity="0.95"/>
+  </g>
+  <g transform="translate(820 380) rotate(8)">
+    <rect width="320" height="420" rx="30" fill="url(#a01-card-2)" stroke="rgba(255,255,255,0.4)" stroke-width="2" opacity="0.92"/>
+  </g>
+
+  <rect width="1600" height="1000" filter="url(#a01-grain)" opacity="0.5"/>
+</svg>
