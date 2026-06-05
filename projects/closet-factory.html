@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Closet Factory · Case Study · Nicolle Rodrigues</title>
+  <meta name="description" content="A website redesign for Closet Factory, rebuilt around the moment that mattered most for the business: booking a free in-home design consultation. UX Designer at Zion & Zion, 2024." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://use.typekit.net/nvu8kbb.css" />
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       DESIGN TOKENS — match the homepage brand
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      --color-bg:            oklch(0.58 0.12 285);
+      --color-bg-2:          oklch(0.48 0.14 290);
+      --color-surface:       oklch(1 0 0 / 0.08);
+      --color-surface-2:     oklch(1 0 0 / 0.14);
+      --color-surface-solid: oklch(0.96 0.02 285);
+      --color-text:          oklch(0.98 0.005 285);
+      --color-text-muted:    oklch(0.92 0.02 285 / 0.72);
+      --color-text-ink:      oklch(0.22 0.06 280);
+      --color-text-ink-muted:oklch(0.45 0.04 280 / 0.85);
+      --color-border:        oklch(1 0 0 / 0.18);
+      --color-border-strong: oklch(1 0 0 / 0.32);
+      --color-border-ink:    oklch(0 0 0 / 0.08);
+
+      --orb-1: oklch(0.72 0.18 265);
+      --orb-2: oklch(0.78 0.14 320);
+      --orb-3: oklch(0.82 0.14 220);
+      --orb-4: oklch(0.9  0.10 20);
+
+      --font-display: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-body:    "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-mono:    "aktiv-grotesk", ui-sans-serif, system-ui, sans-serif;
+
+      --radius-sm:   10px;
+      --radius-md:   18px;
+      --radius-lg:   28px;
+      --radius-xl:   40px;
+      --radius-full: 999px;
+
+      --ease-out:  cubic-bezier(0.2, 0.7, 0.2, 1);
+      --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1);
+      --dur-fast:  180ms;
+      --dur-med:   360ms;
+      --dur-slow:  700ms;
+
+      --max-w: 1200px;
+      --gutter: clamp(20px, 4vw, 56px);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       RESET
+       ══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
+    /* ══════════════════════════════════════════════════════════════
+       BACKDROP — lavender gradient + drifting orbs (matches home)
+       ══════════════════════════════════════════════════════════════ */
+    .global-backdrop {
+      position: fixed; inset: 0; z-index: -2;
+      background: linear-gradient(160deg, var(--color-bg) 0%, var(--color-bg-2) 100%);
+    }
+    .orb-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; }
+    .orb-1 { width: 600px; height: 600px; top: -10%; left: -10%; background: var(--orb-1); animation: drift1 22s ease-in-out infinite; }
+    .orb-2 { width: 500px; height: 500px; top: 30%; right: -8%; background: var(--orb-2); animation: drift2 26s ease-in-out infinite; }
+    .orb-3 { width: 420px; height: 420px; bottom: 10%; left: 30%; background: var(--orb-3); animation: drift3 30s ease-in-out infinite; }
+
+    @keyframes drift1 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(40px,-30px)} 66%{transform:translate(-20px,20px)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-30px,40px)} 66%{transform:translate(25px,-15px)} }
+    @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} }
+
+    /* ══════════════════════════════════════════════════════════════
+       LAYOUT PRIMITIVES
+       ══════════════════════════════════════════════════════════════ */
+    /* Inside body-section the parent already has gutter padding —
+       so .container is just a max-width centering wrapper, no padding. */
+    .container { max-width: var(--max-w); margin: 0 auto; }
+    .stack-sm  > * + * { margin-top: 12px; }
+    .stack-md  > * + * { margin-top: 20px; }
+    .stack-lg  > * + * { margin-top: 32px; }
+
+    /* ══════════════════════════════════════════════════════════════
+       NAV — fixed glass pill, matches homepage
+       ══════════════════════════════════════════════════════════════ */
+    header.site-nav {
+      position: fixed; top: 16px; left: 0; right: 0; z-index: 50;
+      padding: 0 var(--gutter);
+    }
+    .nav-pill {
+      max-width: var(--max-w); margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 8px 8px 16px;
+      background: oklch(1 0 0 / 0.1);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid oklch(1 0 0 / 0.22);
+      border-radius: var(--radius-full);
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.18), 0 8px 32px oklch(0 0 0 / 0.18);
+    }
+    .nav-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: var(--radius-full);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      transition: color var(--dur-fast), background var(--dur-fast);
+    }
+    .nav-back:hover { color: var(--color-text); background: oklch(1 0 0 / 0.08); }
+    .nav-right { display: flex; align-items: center; gap: 4px; }
+    .nav-link {
+      display: inline-flex; align-items: center; padding: 8px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13.5px; font-weight: 500; color: var(--color-text-muted);
+      transition: all var(--dur-fast) var(--ease-out);
+    }
+    .nav-link:hover { color: var(--color-text); background: oklch(1 0 0 / 0.1); }
+    .nav-cta {
+      margin-left: 8px;
+      padding: 9px 18px; border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.95); color: oklch(0.22 0.06 280);
+      font-size: 13.5px; font-weight: 500;
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.8), 0 4px 16px oklch(0 0 0 / 0.15);
+      transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.8), 0 8px 24px oklch(0 0 0 / 0.2); }
+    @media (max-width: 720px) { .nav-right .nav-link { display: none; } }
+
+    /* ══════════════════════════════════════════════════════════════
+       HERO — project title + tagline + floating cover
+       ══════════════════════════════════════════════════════════════ */
+    section.hero {
+      padding: 160px var(--gutter) 80px;
+      position: relative;
+    }
+    .hero-grid { max-width: var(--max-w); margin: 0 auto; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px 6px 12px;
+      border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.1);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 28px;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orb-1);
+      box-shadow: 0 0 12px var(--orb-1);
+    }
+
+    h1.hero-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(3rem, 9vw, 7rem);   /* v1's bigger scale */
+      line-height: 0.98;                    /* slight bump from 0.94 to clear descenders */
+      letter-spacing: -0.045em;
+      max-width: 16ch;                      /* slightly wider than v1's 14ch for italic breathing room */
+      padding-right: 0.25em;                /* container room for italic slant overhang */
+      padding-bottom: 0.18em;               /* room for descenders (g, j, p, q, y) on the bottom line */
+    }
+    h1.hero-title em {
+      font-style: italic; font-weight: 500;
+      /* inline-block + padding extends the gradient region past the italic
+         ink overhang, so the slanted "d" stays inside the clip boundary. */
+      display: inline-block;
+      padding-right: 0.18em;
+      background: linear-gradient(120deg, oklch(0.92 0.08 285), oklch(0.86 0.14 320), oklch(0.88 0.12 220));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-tagline {
+      margin-top: 28px;
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+      line-height: 1.4;
+      letter-spacing: -0.015em;
+      max-width: 50ch;
+      color: var(--color-text-muted);
+    }
+
+    /* Hero cover — gradient placeholder card */
+    .hero-cover {
+      margin-top: 72px;
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid oklch(1 0 0 / 0.25);
+      box-shadow:
+        inset 0 1px 0 oklch(1 0 0 / 0.4),
+        0 30px 80px oklch(0 0 0 / 0.25);
+      background:
+        radial-gradient(circle at 25% 25%, oklch(0.85 0.16 265), transparent 55%),
+        radial-gradient(circle at 80% 70%, oklch(0.82 0.18 320), transparent 60%),
+        linear-gradient(135deg, oklch(0.7 0.16 265), oklch(0.78 0.14 320));
+    }
+    /* placeholder hero-cover label removed for real video */
+
+    /* ══════════════════════════════════════════════════════════════
+       META STRIP — role/year/tools/duration in a glass row
+       ══════════════════════════════════════════════════════════════ */
+    section.meta {
+      padding: 24px var(--gutter) 40px;
+    }
+    .meta-grid {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: oklch(1 0 0 / 0.18);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .meta-item {
+      padding: 24px 28px;
+      background: oklch(1 0 0 / 0.06);
+    }
+    .meta-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    .meta-value {
+      font-family: var(--font-display);
+      font-size: 17px; font-weight: 500;
+      letter-spacing: -0.015em;
+      color: var(--color-text);
+    }
+    @media (max-width: 720px) { .meta-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* ══════════════════════════════════════════════════════════════
+       SECTION SCAFFOLDING — eyebrow + heading pattern
+       ══════════════════════════════════════════════════════════════ */
+    section.body-section {
+      padding: 72px var(--gutter);
+      position: relative;
+    }
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px 5px 10px;
+      border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.08);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 24px;
+    }
+    .section-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orb-1); }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      color: var(--color-text);
+    }
+    .section-lede {
+      margin-top: 18px;
+      font-size: 17px; line-height: 1.6;
+      color: var(--color-text-muted);
+      max-width: 56ch;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       OVERVIEW — split layout, left column sticky on desktop
+       ══════════════════════════════════════════════════════════════ */
+    .overview-split {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      gap: 64px;
+      align-items: start;
+    }
+    .overview-split aside {
+      position: sticky; top: 120px;
+    }
+    .overview-card {
+      padding: 28px;
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .overview-card-title {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 12px;
+    }
+    .overview-card-list { list-style: none; }
+    .overview-card-list li {
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--color-text);
+      border-bottom: 1px dashed oklch(1 0 0 / 0.12);
+    }
+    .overview-card-list li:last-child { border-bottom: none; }
+
+    /* Push prose down past the eyebrow pill so first line aligns
+       with the top of the section heading on the left column. */
+    .overview-prose { padding-top: 60px; }
+    .overview-prose p {
+      font-size: 17px; line-height: 1.7;
+      color: oklch(1 0 0 / 0.92);
+    }
+    .overview-prose p + p { margin-top: 20px; }
+    @media (max-width: 900px) { .overview-prose { padding-top: 0; } }
+
+    @media (max-width: 900px) {
+      .overview-split { grid-template-columns: 1fr; gap: 32px; }
+      .overview-split aside { position: static; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SOLUTION — full-width image + 3-feature row below
+       ══════════════════════════════════════════════════════════════ */
+    .solution-image {
+      max-width: var(--max-w); margin: 56px auto 0;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--radius-xl);
+      overflow: hidden; position: relative;
+      border: 1px solid oklch(1 0 0 / 0.2);
+      background:
+        radial-gradient(circle at 35% 30%, oklch(0.88 0.12 220), transparent 60%),
+        radial-gradient(circle at 75% 65%, oklch(0.88 0.14 285), transparent 60%),
+        linear-gradient(135deg, oklch(0.75 0.14 240), oklch(0.78 0.14 285));
+      box-shadow: 0 30px 80px oklch(0 0 0 / 0.25);
+    }
+    /* placeholder solution-image label removed for real video */
+
+    .feature-grid {
+      max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .feature-card {
+      padding: 28px;
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      transition: transform var(--dur-med) var(--ease-out), background var(--dur-med);
+    }
+    .feature-card:hover { transform: translateY(-4px); background: oklch(1 0 0 / 0.1); }
+    .feature-num {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted); margin-bottom: 16px;
+    }
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 20px; font-weight: 600;
+      letter-spacing: -0.02em; line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .feature-body { font-size: 14px; line-height: 1.6; color: var(--color-text-muted); }
+
+    @media (max-width: 900px) { .feature-grid { grid-template-columns: 1fr; } }
+
+    /* ══════════════════════════════════════════════════════════════
+       PROCESS — 3-step journey + 2x3 image grid
+       ══════════════════════════════════════════════════════════════ */
+    .process-steps {
+      max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .process-step {
+      padding: 32px 28px 28px;
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      position: relative;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .process-step-num {
+      position: absolute; top: 24px; right: 24px;
+      font-family: var(--font-display);
+      font-size: 56px; font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: oklch(1 0 0 / 0.18);
+    }
+    .process-step-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--orb-1); margin-bottom: 24px;
+    }
+    .process-step-title {
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.02em; line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .process-step-body { font-size: 14px; line-height: 1.65; color: var(--color-text-muted); }
+
+    .process-gallery {
+      max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .process-thumb {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+      border: 1px solid oklch(1 0 0 / 0.2);
+      position: relative; overflow: hidden;
+    }
+    .process-thumb::after {
+      content: attr(data-label);
+      position: absolute; inset: auto 0 12px 0;
+      text-align: center;
+      font-family: var(--font-mono); font-size: 9px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(1 0 0 / 0.5);
+    }
+    .process-thumb-1 { background: linear-gradient(135deg, oklch(0.78 0.14 220), oklch(0.82 0.12 250)); }
+    .process-thumb-2 { background: linear-gradient(135deg, oklch(0.82 0.14 285), oklch(0.78 0.16 320)); }
+    .process-thumb-3 { background: linear-gradient(135deg, oklch(0.85 0.12 200), oklch(0.78 0.14 240)); }
+    .process-thumb-4 { background: linear-gradient(135deg, oklch(0.8 0.16 305), oklch(0.78 0.14 340)); }
+    .process-thumb-5 { background: linear-gradient(135deg, oklch(0.85 0.1 260), oklch(0.78 0.16 290)); }
+    .process-thumb-6 { background: linear-gradient(135deg, oklch(0.82 0.12 230), oklch(0.78 0.14 270)); }
+
+    @media (max-width: 900px) {
+      .process-steps { grid-template-columns: 1fr; }
+      .process-gallery { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       OUTCOMES — 3 large metric cards
+       ══════════════════════════════════════════════════════════════ */
+    .outcomes-grid {
+      max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .outcome-card {
+      padding: 40px 32px;
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      position: relative; overflow: hidden;
+    }
+    .outcome-card::before {
+      content: ""; position: absolute; inset: -2px auto auto -2px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      filter: blur(40px); opacity: 0.4;
+      pointer-events: none;
+    }
+    .outcome-card:nth-child(1)::before { background: var(--orb-1); }
+    .outcome-card:nth-child(2)::before { background: var(--orb-2); }
+    .outcome-card:nth-child(3)::before { background: var(--orb-3); }
+
+    .outcome-metric {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 700;
+      line-height: 1; letter-spacing: -0.045em;
+      margin-bottom: 16px; position: relative;
+    }
+    .outcome-label {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 8px; position: relative;
+    }
+    .outcome-detail {
+      font-size: 14px; line-height: 1.6;
+      color: oklch(1 0 0 / 0.85); position: relative;
+    }
+
+    @media (max-width: 900px) { .outcomes-grid { grid-template-columns: 1fr; } }
+
+    /* ══════════════════════════════════════════════════════════════
+       NEXT PROJECT — large full-width card
+       ══════════════════════════════════════════════════════════════ */
+    section.next-project {
+      padding: 60px var(--gutter) 120px;
+    }
+    .next-card {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr minmax(280px, 360px);
+      gap: 56px; align-items: end;
+      padding: clamp(32px, 5vw, 72px);
+      background: oklch(1 0 0 / 0.06);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      transition: background var(--dur-med);
+    }
+    .next-card:hover { background: oklch(1 0 0 / 0.1); }
+    .next-card:hover .next-arrow { transform: translateX(8px) translateY(-8px); }
+    .next-card:hover .next-thumb { transform: scale(1.02); }
+
+    .next-eyebrow {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 16px;
+    }
+    .next-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 600;
+      letter-spacing: -0.035em; line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .next-tagline {
+      font-size: 16px; line-height: 1.55;
+      color: var(--color-text-muted);
+      margin-bottom: 28px;
+      max-width: 42ch;
+    }
+    .next-go {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text);
+    }
+    .next-arrow { transition: transform var(--dur-med) var(--ease-out); }
+    .next-thumb {
+      aspect-ratio: 3 / 4;
+      border-radius: var(--radius-lg);
+      border: 1px solid oklch(1 0 0 / 0.25);
+      background:
+        radial-gradient(circle at 30% 30%, oklch(0.86 0.16 320), transparent 60%),
+        linear-gradient(135deg, oklch(0.72 0.18 290), oklch(0.78 0.14 350));
+      box-shadow: 0 20px 60px oklch(0 0 0 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.4);
+      transition: transform var(--dur-med) var(--ease-out);
+    }
+    @media (max-width: 900px) {
+      .next-card { grid-template-columns: 1fr; gap: 32px; }
+      .next-thumb { max-width: 280px; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       FOOTER — minimal, matches homepage
+       ══════════════════════════════════════════════════════════════ */
+    footer.site-footer {
+      padding: 40px var(--gutter);
+      border-top: 1px solid var(--color-border);
+      background: oklch(1 0 0 / 0.04);
+    }
+    .footer-row {
+      max-width: var(--max-w); margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+    .footer-brand {
+      display: inline-flex; align-items: center; gap: 12px;
+    }
+    .footer-mark {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, oklch(0.65 0.16 275), oklch(0.58 0.16 320));
+      border: 1px solid oklch(1 0 0 / 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 12px; font-weight: 600;
+      color: oklch(1 0 0 / 0.95);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SCROLL REVEAL
+       ══════════════════════════════════════════════════════════════ */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal[data-stagger="1"] { transition-delay: 80ms; }
+    .reveal[data-stagger="2"] { transition-delay: 160ms; }
+    .reveal[data-stagger="3"] { transition-delay: 240ms; }
+
+    /* ══════════════════════════════════════════════════════════════
+       ARROW ROLLING ANIMATION (GLOBAL)
+       Any button/link with .arrow-roll as a direct child gets the same
+       upward roll on hover/focus. Two SVGs stacked, clipped, transformed.
+       ══════════════════════════════════════════════════════════════ */
+    .arrow-roll {
+      position: relative;
+      display: inline-block;
+      width: 14px; height: 14px;
+      overflow: hidden;
+      vertical-align: -2px;
+      flex-shrink: 0;
+    }
+    .arrow-roll svg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      transition: transform 380ms cubic-bezier(0.6, 0.05, 0.2, 1);
+    }
+    .arrow-roll .arrow-a { transform: translate3d(0, 0, 0); }
+    .arrow-roll .arrow-b { transform: translate3d(0, 110%, 0); }
+    *:has(> .arrow-roll):hover .arrow-roll .arrow-a,
+    *:has(> .arrow-roll):focus-visible .arrow-roll .arrow-a {
+      transform: translate3d(0, -110%, 0);
+    }
+    *:has(> .arrow-roll):hover .arrow-roll .arrow-b,
+    *:has(> .arrow-roll):focus-visible .arrow-roll .arrow-b {
+      transform: translate3d(0, 0, 0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .arrow-roll svg { transition: none; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ACCESSIBILITY
+       ══════════════════════════════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    :focus-visible { outline: 2px solid var(--orb-1); outline-offset: 3px; border-radius: 4px; }
+
+    /* ── Homepage-style nav extras ──────────────────────────── */
+    .nav-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 0 6px;
+    }
+    .nav-mark {
+      width: 34px; height: 34px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, oklch(0.65 0.16 275), oklch(0.58 0.16 320));
+      border: 1px solid oklch(1 0 0 / 0.5);
+      color: oklch(1 0 0 / 0.98);
+      font-family: var(--font-display); font-size: 16px; font-weight: 600;
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.5);
+    }
+    .nav-name {
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(0.38 0.05 280 / 0.85);
+    }
+    .nav-center { display: flex; align-items: center; gap: 2px; }
+    .nav-dot {
+      display: inline-block; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--orb-1);
+      margin-left: 2px;
+    }
+    .nav-icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.1);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      transition: all var(--dur-fast) var(--ease-out);
+    }
+    .nav-icon-btn:hover { background: oklch(1 0 0 / 0.18); color: var(--color-text); }
+    .cta-short { display: none; }
+    @media (max-width: 880px) {
+      .nav-center, .nav-name, .nav-icon-btn { display: none; }
+      .cta-long  { display: none; }
+      .cta-short { display: inline; }
+    }
+
+    /* ── Breadcrumb ──────────────────────────────────────────── */
+    .hero-breadcrumb {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 0;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 28px;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+    .hero-breadcrumb:hover { color: var(--color-text); }
+
+    /* ── Grid image zoom (image scales inside its container) ─── */
+    .process-thumb-wrap {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+      border: 1px solid oklch(1 0 0 / 0.2);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .process-thumb-wrap .process-thumb,
+    .process-thumb-wrap img.process-thumb {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 700ms var(--ease-out);
+      display: block;
+      aspect-ratio: auto;       /* override the 4:3 from the outer wrap */
+      border-radius: 0;         /* corners handled by wrap */
+      border: none;
+    }
+    .process-thumb-wrap:hover .process-thumb,
+    .process-thumb-wrap:focus-within .process-thumb {
+      transform: scale(1.07);
+    }
+
+    /* ── Research findings (replaces meta strip) ───────────── */
+    .findings-head {
+      max-width: var(--max-w); margin: 0 auto 36px;
+    }
+    .findings-head .section-heading { max-width: 22ch; }
+    .findings-grid {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: oklch(1 0 0 / 0.18);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .finding-step {
+      padding: 30px 28px 32px;
+      background: oklch(1 0 0 / 0.06);
+      position: relative;
+      min-height: 196px;
+    }
+    .finding-num {
+      position: absolute;
+      top: 18px; right: 22px;
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      color: oklch(1 0 0 / 0.16);
+      line-height: 1;
+    }
+    .finding-label {
+      font-family: var(--font-mono);
+      font-size: 14.5px;
+      font-weight: 100;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: oklch(1 0 0);
+      margin-bottom: 14px;
+    }
+    .finding-text {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.4;
+      letter-spacing: -0.012em;
+      color: var(--color-text);
+      max-width: 26ch;
+    }
+    @media (max-width: 900px) {
+      .findings-grid { grid-template-columns: 1fr 1fr; }
+      .finding-step { min-height: 0; }
+    }
+    @media (max-width: 560px) {
+      .findings-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       CONTACT BLOCK — mirrors the homepage form & gravity pills
+       ══════════════════════════════════════════════════════════════ */
+    section.contact-block {
+      padding: 80px var(--gutter) 0;
+      position: relative;
+    }
+    .contact-inner {
+      max-width: var(--max-w); margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+    @media (max-width: 880px) { .contact-inner { grid-template-columns: 1fr; gap: 32px; } }
+
+    .contact-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 12px 5px 10px;
+      border-radius: var(--radius-full);
+      background: oklch(1 0 0 / 0.08);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 22px;
+    }
+    .contact-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orb-1);
+    }
+    .contact-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+      color: var(--color-text);
+      margin-bottom: 18px;
+    }
+    .contact-heading em {
+      font-style: italic;
+      background: linear-gradient(120deg, oklch(0.92 0.08 285), oklch(0.86 0.14 320), oklch(0.88 0.12 220));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+      padding-right: 0.18em;
+    }
+    .contact-sub {
+      font-size: 16px; line-height: 1.6;
+      color: var(--color-text-muted);
+      max-width: 40ch;
+    }
+    .contact-aside-note {
+      margin-top: 24px;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .contact-aside-note a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: oklch(1 0 0 / 0.7);
+      font-weight: 500;
+      transition: text-decoration-color var(--dur-fast);
+    }
+    .contact-aside-note a:hover { text-decoration-color: oklch(1 0 0); }
+
+    /* ── Form: exact homepage styling ──
+       Transparent inputs with a single bottom rule, larger display type,
+       deep-navy primary button, mono LinkedIn note inline with the submit. */
+    .contact-form {
+      display: flex; flex-direction: column;
+      gap: 28px; max-width: 36rem;
+    }
+    .contact-form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    }
+    @media (max-width: 560px) {
+      .contact-form { gap: 22px; }
+      .contact-form-grid { grid-template-columns: 1fr; gap: 22px; }
+    }
+    .contact-field {
+      display: flex; flex-direction: column; gap: 6px; position: relative;
+    }
+    .contact-field > span {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: oklch(1 0 0 / 0.92);
+    }
+    .contact-field input,
+    .contact-field textarea {
+      width: 100%;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid oklch(1 0 0 / 0.5);
+      border-radius: 0;
+      padding: 8px 0 10px;
+      color: var(--color-text);
+      font-family: var(--font-display);
+      font-size: 18px; line-height: 1.4; letter-spacing: -0.01em;
+      transition: border-color var(--dur-med) var(--ease-out);
+      outline: none;
+      resize: none;
+    }
+    .contact-field textarea {
+      font-family: var(--font-body);
+      font-size: 16px; line-height: 1.55; min-height: 84px;
+    }
+    .contact-field input::placeholder,
+    .contact-field textarea::placeholder {
+      color: oklch(1 0 0 / 0.7); font-weight: 400;
+    }
+    .contact-field input:focus,
+    .contact-field textarea:focus { border-bottom-color: oklch(1 0 0); }
+    .contact-field input:focus::placeholder,
+    .contact-field textarea:focus::placeholder { color: oklch(1 0 0 / 0.6); }
+
+    .contact-form-actions {
+      display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+      gap: 18px; margin-top: 4px;
+    }
+    .contact-form-actions .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .contact-form-note {
+      margin-left: auto;
+      text-align: right;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: oklch(1 0 0 / 0.92);
+    }
+    .contact-form-note a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: oklch(1 0 0 / 0.7);
+      font-weight: 500;
+      transition: text-decoration-color var(--dur-fast);
+    }
+    .contact-form-note a:hover { text-decoration-color: oklch(1 0 0); }
+
+    /* Primary submit button — matches homepage btn-primary */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 500;
+      background: oklch(0.22 0.06 280);
+      color: oklch(0.98 0.005 285);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid oklch(0.22 0.06 280);
+      box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.1),
+                  0 10px 30px -10px oklch(0.2 0.1 280 / 0.4);
+      cursor: pointer;
+      transition: background var(--dur-fast), transform var(--dur-fast);
+    }
+    .btn-primary:hover {
+      background: oklch(0.3 0.08 280);
+      transform: translateY(-1px);
+    }
+
+    /* ── Gravity pills stage ──
+       In document flow below the form (preserves the v5 form layout).
+       overflow: visible lets pills be seen above the stage box as they
+       fall in. pointer-events stays AUTO so Matter's mouse handler can
+       track drags smoothly even when the cursor moves into empty space
+       within the stage box. */
+    .pills-stage {
+      position: relative;
+      max-width: var(--max-w);     /* matches body content width */
+      width: 100%;
+      height: 260px;
+      margin: 48px auto 0;          /* center horizontally inside contact-block */
+      overflow: visible;
+      z-index: 3;
+    }
+    .gravity-pill {
+      position: absolute;
+      left: 0; top: 0;
+      pointer-events: auto;
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(18px, 2vw, 26px);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      user-select: none;
+      border: 1px solid oklch(1 0 0 / 0.4);
+      box-shadow:
+        0 10px 24px -8px oklch(0.15 0.08 280 / 0.45),
+        inset 0 1px 0 0 oklch(1 0 0 / 0.3);
+      touch-action: none;
+      will-change: transform;
+      visibility: hidden;     /* shown by JS after first physics tick */
+    }
+    .gravity-pill:active { cursor: grabbing; }
+    .gravity-pill-0 {
+      background: var(--color-text-ink);
+      color: var(--color-text);
+      border-color: oklch(1 0 0 / 0.22);
+    }
+    .gravity-pill-1 {
+      background: oklch(1 0 0 / 0.95);
+      color: var(--color-text-ink);
+      border-color: oklch(1 0 0 / 0.6);
+    }
+    .gravity-pill-2 {
+      background: oklch(0.78 0.16 270);
+      color: oklch(0.18 0.06 280);
+      border-color: oklch(1 0 0 / 0.5);
+    }
+    .gravity-pill-3 {
+      background: oklch(0.85 0.14 320);
+      color: oklch(0.18 0.06 280);
+      border-color: oklch(1 0 0 / 0.5);
+    }
+    @media (max-width: 560px) {
+      .gravity-pill { padding: 10px 18px; font-size: 16px; }
+    }
+
+
+    /* Real media — videos and images fill their hero / solution / grid containers */
+    video.hero-cover,
+    video.solution-image,
+    img.hero-cover,
+    img.solution-image,
+    img.process-thumb {
+      display: block; width: 100%; height: 100%; object-fit: cover;
+    }
+
+  </style>
+</head>
+
+<body>
+  <!-- BACKDROP ─────────────────────────────────────────────── -->
+  <div class="global-backdrop" aria-hidden="true"></div>
+  <div class="orb-layer" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- NAV — mirrors the homepage nav ─────────────────────── -->
+  <header class="site-nav">
+    <nav class="nav-pill" aria-label="Primary">
+      <a href="/" class="nav-logo" aria-label="Nicolle Rodrigues home">
+        <span class="nav-mark">N</span>
+        <span class="nav-name">Nicolle R.</span>
+      </a>
+      <div class="nav-center">
+        <a href="/#about" class="nav-link">About</a>
+        <a href="/#projects" class="nav-link">Projects</a>
+        <a href="/#library" class="nav-link">AI Library<span class="nav-dot" aria-hidden="true"></span></a>
+        <a href="/#articles" class="nav-link">Articles</a>
+        <a href="/#contact" class="nav-link">Contact</a>
+      </div>
+      <div class="nav-right">
+        <a href="mailto:nicolleadduci@gmail.com" class="nav-icon-btn" aria-label="Email">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="2" y="3.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M2.5 4.5L8 9L13.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <a href="/#contact" class="nav-cta">
+          <span class="cta-long">Book a 30 min call</span>
+          <span class="cta-short">Book call</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HERO ─────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-grid">
+        <a href="/" class="hero-breadcrumb reveal" aria-label="Back to homepage">
+          <span class="arrow-roll" aria-hidden="true">
+            <svg class="arrow-a" viewBox="0 0 16 16" fill="none"><path d="M12 8H4M4 8L8 4M4 8L8 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="arrow-b" viewBox="0 0 16 16" fill="none"><path d="M12 8H4M4 8L8 4M4 8L8 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span>Back to homepage</span>
+        </a>
+        <h1 class="hero-title reveal" data-stagger="1">
+          Closet Factory, <em>evolved</em>.
+        </h1>
+        <p class="hero-tagline reveal" data-stagger="2">
+          A website redesign for a national custom organization franchise leader, rebuilt around a single insight: people don&apos;t purchase custom closets. They want the feeling of being organized based on their unique needs.
+        </p>
+        <video
+          class="hero-cover reveal"
+          data-stagger="3"
+          autoplay loop muted playsinline preload="auto"
+          aria-label="Closet Factory website cover animation">
+          <source src="Assets/CF-Project-Cover-1600x900-720p-v2.mp4" type="video/mp4" />
+        </video>
+      </div>
+    </section>
+
+    <!-- RESEARCH FINDINGS ─────────────────────────────────── -->
+    <section class="meta">
+      <div class="findings-head reveal">
+        <h2 class="section-heading">UX research surfaced six clear opportunities.</h2>
+      </div>
+      <div class="findings-grid reveal">
+        <div class="finding-step">
+          <div class="finding-num">01</div>
+          <div class="finding-label">User Flow</div>
+          <div class="finding-text">Establish a structured, strategic page-to-page flow that encourages a journey forward through the site.</div>
+        </div>
+        <div class="finding-step">
+          <div class="finding-num">02</div>
+          <div class="finding-label">Scannable Content</div>
+          <div class="finding-text">Optimize the content on each page to a sustainable, scannable level for users.</div>
+        </div>
+        <div class="finding-step">
+          <div class="finding-num">03</div>
+          <div class="finding-label">Local SEO</div>
+          <div class="finding-text">Prioritize local search and consistent SEO standards across franchisee location pages.</div>
+        </div>
+        <div class="finding-step">
+          <div class="finding-num">04</div>
+          <div class="finding-label">Page Hierarchy</div>
+          <div class="finding-text">Strategize the information hierarchy on each page to align with the customer journey.</div>
+        </div>
+        <div class="finding-step">
+          <div class="finding-num">05</div>
+          <div class="finding-label">Navigation</div>
+          <div class="finding-text">Re-organize the main navigation and sitemap to avoid confusion and encourage self-selection.</div>
+        </div>
+        <div class="finding-step">
+          <div class="finding-num">06</div>
+          <div class="finding-label">Best Practices</div>
+          <div class="finding-text">Implement all accessibility, SEO, and UX best practices and requirements.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE WHY ─────────────────────────────────────────── -->
+    <section class="body-section" id="why">
+      <div class="overview-split">
+        <aside class="reveal">
+          <h2 class="section-heading">A digital experience that wasn&apos;t keeping up.</h2>
+          <div class="overview-card" style="margin-top: 32px;">
+            <div class="overview-card-title">At a glance</div>
+            <ul class="overview-card-list">
+              <li>85% of users felt overwhelmed</li>
+              <li>&ldquo;Closet Talk&rdquo; jargon in nav</li>
+              <li>Mobile journey breaking down</li>
+              <li>1,224 pages, 280 broken metas</li>
+            </ul>
+          </div>
+        </aside>
+        <div class="overview-prose">
+          <p class="reveal" data-stagger="1">
+            Closet Factory has been a leader in custom home organization for over three decades. Customers trusted the work, while sales teams offered free in-home design consultations as their highest converting moment. The challenge wasn&apos;t the business. It was the digital experience users encountered, and the disruptive journey throughout the process.
+          </p>
+          <p class="reveal" data-stagger="2">
+            The website used industry jargon in its navigation that usability testing showed was actively confusing first-time visitors. The hierarchy on key pages didn&apos;t reflect how people actually shop for custom organization. Visitors arrived expecting imagery, inspiration, and a quick way to talk to a designer, but were greeted by walls of text instead. 85% of moderated testers said they felt overwhelmed. On mobile, the experience broke down even further, with research showing users rage-clicking the hamburger menu and the 61-locations CTA before reaching the consultation form.
+          </p>
+          <p class="reveal" data-stagger="3">
+            My role as lead UX Designer was to start with a brand refresh that defined the visual system, then carry it through to the new website so booking a free in-home design consultation felt like the natural next step for their customers, not a hurdle. The work also extended to email campaigns, print, social, digital ads, and showroom signage.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE WHAT ────────────────────────────────────────── -->
+    <section class="body-section" id="what">
+      <div class="container">
+        <div class="reveal">
+          <h2 class="section-heading">A website built around the user&apos;s needs.</h2>
+          <p class="section-lede">
+            Restructured information architecture. A mobile-first layout system. Imagery promoted to lead role. And accessibility baked in from wireframe stage. <em>Because compliance isn&apos;t a feature you bolt on at QA.</em>
+          </p>
+        </div>
+      </div>
+      <video
+        class="solution-image reveal"
+        autoplay loop muted playsinline preload="metadata"
+        aria-label="Closet Factory homepage animation">
+        <source src="Assets/CF_Primary-UI_1600x900.mp4" type="video/mp4" />
+      </video>
+      <div class="feature-grid">
+        <div class="feature-card reveal" data-stagger="1">
+          <div class="feature-title">Customer-led information architecture</div>
+          <div class="feature-body">Reorganized navigation around how visitors actually self-select (closets, garages, pantries) instead of internal &ldquo;Closet Talk&rdquo; terminology. Removed three legacy sections drawing under 1% of traffic combined: Look Books, Design Board, and Free Guides. That freed the information architecture for the pages earning 17.5% of all site entries: local franchise pages.</div>
+        </div>
+        <div class="feature-card reveal" data-stagger="2">
+          <div class="feature-title">Mobile-first by necessity</div>
+          <div class="feature-body">Usability testing showed 42% of imagery interactions happening on mobile. Every page was designed for the smallest screen first, then progressively enhanced. Mobile menu, locations CTA, and forms simplified for thumb-reach. Post-launch click maps confirm median time on mobile climbed to 19.5 seconds, with the consultation form among the top click targets.</div>
+        </div>
+        <div class="feature-card reveal" data-stagger="3">
+          <div class="feature-title">WCAG 2.1 AA, from wireframe</div>
+          <div class="feature-body">Color contrast, focus states, keyboard navigation, semantic landmarks, alt-text standards, and reduced-motion support were drafted into the wireframes, not added during QA. Every PII issue flagged in research (form data leaking through URL parameters) was resolved at launch.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE HOW ─────────────────────────────────────────── -->
+    <section class="body-section" id="how">
+      <div class="container">
+        <div class="reveal">
+          <h2 class="section-heading">Anchored in customer research and usability testing.</h2>
+        </div>
+      </div>
+      <div class="process-steps">
+        <div class="process-step reveal" data-stagger="1">
+          <div class="process-step-title">Three sections, less than 1% of traffic</div>
+          <div class="process-step-body">Look Books drew 0.03% of traffic. Design Board: 0.55%. Free Guides: 0.1%. Combined, all three legacy sections accounted for under 1% of all visits, while taking up roughly 30% of the navigation real estate. Cutting them gave the information architecture back to the pages people actually came to use.</div>
+        </div>
+        <div class="process-step reveal" data-stagger="2">
+          <div class="process-step-title">17.5% of entries, 21.2% of submissions</div>
+          <div class="process-step-body">Local franchise pages already drove 17.5% of all site entries and 21.2% of all form submissions before the redesign. The new information architecture made them the centerpiece, with consistent location-page templates, a clear path to a free in-home design consultation, and aligned local SEO across every market.</div>
+        </div>
+        <div class="process-step reveal" data-stagger="3">
+          <div class="process-step-title">42% of imagery clicks happened on mobile</div>
+          <div class="process-step-body">Research showed 42% of imagery interactions happening on mobile, against 26% on desktop. Every page was designed for the smallest screen first, then progressively enhanced. Mobile menu, locations CTA, and form fields simplified for thumb-reach. Post-launch click maps confirm 19.5s median time on mobile.</div>
+        </div>
+      </div>
+      <div class="process-gallery">
+        <div class="process-thumb-wrap reveal"><img class="process-thumb" src="Assets/CF-grid-01.jpg" alt="Wireframe · Homepage" /></div>
+        <div class="process-thumb-wrap reveal" data-stagger="1"><img class="process-thumb" src="Assets/CF-grid-02.jpg" alt="Wireframe · Locations" /></div>
+        <div class="process-thumb-wrap reveal" data-stagger="2"><img class="process-thumb" src="Assets/CF-grid-03.jpg" alt="Mockup · Mobile menu" /></div>
+        <div class="process-thumb-wrap reveal"><img class="process-thumb" src="Assets/CF-grid-04.jpg" alt="Mockup · Consultation" /></div>
+        <div class="process-thumb-wrap reveal" data-stagger="1"><img class="process-thumb" src="Assets/CF-grid-05.jpg" alt="Brand · Email system" /></div>
+        <div class="process-thumb-wrap reveal" data-stagger="2"><img class="process-thumb" src="Assets/CF-grid-06.jpg" alt="Brand · Print spread" /></div>
+      </div>
+    </section>
+
+    <!-- OUTCOMES ────────────────────────────────────────── -->
+    <section class="body-section" id="outcomes">
+      <div class="container">
+        <div class="reveal">
+          <h2 class="section-heading">A digital experience that finally matched the brand&apos;s reputation.</h2>
+        </div>
+      </div>
+      <div class="outcomes-grid">
+        <div class="outcome-card reveal" data-stagger="1">
+          <div class="outcome-label">Form submissions from local pages</div>
+          <div class="outcome-metric">21.2%</div>
+          <div class="outcome-detail">Local franchise pages drove the highest conversion before the redesign. The new information architecture made them the centerpiece, with consistent templates and aligned SEO across every market.</div>
+        </div>
+        <div class="outcome-card reveal" data-stagger="2">
+          <div class="outcome-label">WCAG 2.1 AA compliance</div>
+          <div class="outcome-metric">100%</div>
+          <div class="outcome-detail">Color contrast, focus states, keyboard navigation, semantic landmarks, alt-text standards, and reduced-motion support, all built in from the wireframe stage. Never bolted on at QA.</div>
+        </div>
+        <div class="outcome-card reveal" data-stagger="3">
+          <div class="outcome-label">Median time on mobile, post-launch</div>
+          <div class="outcome-metric">19.5s</div>
+          <div class="outcome-detail">Click maps confirm mobile users settling into longer engagement, with the consultation form among the top click targets across the site.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT BLOCK + GRAVITY PILLS ───────────────────── -->
+    <section class="contact-block">
+      <div class="contact-inner">
+        <div>
+          <h2 class="contact-heading">Let&apos;s build something <em>worth shipping</em>.</h2>
+          <p class="contact-sub">
+            I lead with empathy and back it up with data. If you&apos;ve got a project that needs both, drop a note over there.
+          </p>
+        </div>
+        <form class="contact-form" id="contact-form" novalidate>
+          <div class="contact-form-grid">
+            <label class="contact-field">
+              <span>Name</span>
+              <input type="text" name="name" placeholder="Your name" autocomplete="name" required />
+            </label>
+            <label class="contact-field">
+              <span>Email</span>
+              <input type="email" name="email" placeholder="you@domain.com" autocomplete="email" required />
+            </label>
+          </div>
+          <label class="contact-field">
+            <span>Message</span>
+            <textarea name="message" rows="3" placeholder="Tell me about your project, timeline, scope, what you&apos;re hoping for." required></textarea>
+          </label>
+          <div class="contact-form-actions">
+            <button type="submit" class="btn-primary" id="contact-submit">
+              <span id="contact-submit-label">Send message</span>
+              <span class="arrow-roll" aria-hidden="true">
+                <svg class="arrow-a" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg class="arrow-b" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+            <span class="contact-form-note">
+              Or contact me on <a href="https://www.linkedin.com/in/nicolleadduci/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Gravity pills land on top of the footer ──────────── -->
+      <div class="pills-stage" id="pills-stage">
+        <div class="gravity-pill gravity-pill-0">AI-Enhanced</div>
+        <div class="gravity-pill gravity-pill-1">Human Centered</div>
+        <div class="gravity-pill gravity-pill-2">Data Driven</div>
+        <div class="gravity-pill gravity-pill-3">Accessibility</div>
+        <div class="gravity-pill gravity-pill-0">Adaptive Design</div>
+        <div class="gravity-pill gravity-pill-1">Design System</div>
+      </div>
+    </section>
+</main>
+
+  <!-- FOOTER ──────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-row">
+      <div class="footer-brand">
+        <div class="footer-mark">N</div>
+        <span>Nicolle Rodrigues</span>
+      </div>
+      <span>© 2026 · UX Designer & Design Engineer</span>
+      <span style="opacity: 0.6;">Built with Claude Code</span>
+    </div>
+  </footer>
+
+  <!-- SCROLL REVEAL ───────────────────────────────────────── -->
+  <script>
+    (function () {
+      const els = document.querySelectorAll(".reveal");
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => e.isIntersecting && e.target.classList.add("in"));
+      }, { threshold: 0, rootMargin: "0px 0px -10% 0px" });
+      els.forEach((el) => io.observe(el));
+      // Safety net: anything in viewport on load fires immediately
+      requestAnimationFrame(() => {
+        els.forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("in");
+        });
+      });
+
+    })();
+  </script>
+
+  <script>
+    (function () {
+      // ── Contact form → Web3Forms ──
+      const form = document.getElementById("contact-form");
+      const submitBtn = document.getElementById("contact-submit");
+      const submitLabel = document.getElementById("contact-submit-label");
+      const WEB3FORMS_KEY = "3eb2e900-50bc-455b-bd28-373bd985f26f";
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const data = new FormData(form);
+          const name = (data.get("name") || "").toString().trim();
+          const email = (data.get("email") || "").toString().trim();
+          const message = (data.get("message") || "").toString().trim();
+          if (!name || !email || !message) return;
+          submitBtn.disabled = true;
+          submitLabel.textContent = "Sending…";
+          try {
+            const res = await fetch("https://api.web3forms.com/submit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({
+                access_key: WEB3FORMS_KEY,
+                subject: "[Portfolio · Article] " + name,
+                name, email, message,
+                from_name: "Article Contact Form",
+              }),
+            });
+            const json = await res.json();
+            if (json.success) {
+              submitLabel.textContent = "Message sent · thanks";
+              form.reset();
+            } else {
+              submitLabel.textContent = "Something went wrong";
+            }
+          } catch (err) {
+            submitLabel.textContent = "Something went wrong";
+          } finally {
+            setTimeout(() => { submitBtn.disabled = false; submitLabel.textContent = "Send message"; }, 2400);
+          }
+        });
+      }
+
+      // ── Gravity pills (Matter.js) — fall, settle, and drag-and-drop ──
+      function initPills() {
+        if (typeof Matter === "undefined") return;
+        const stage = document.getElementById("pills-stage");
+        if (!stage) return;
+        const pills = Array.from(stage.querySelectorAll(".gravity-pill"));
+        if (!pills.length) return;
+
+        const rect = stage.getBoundingClientRect();
+        const W = rect.width, H = rect.height;
+        if (W < 100) { setTimeout(initPills, 100); return; }
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          // Just lay them down statically in a row
+          pills.forEach((el, i) => {
+            el.style.position = "absolute";
+            el.style.visibility = "visible";
+            el.style.left = ((i + 0.5) * (W / pills.length) - el.offsetWidth / 2) + "px";
+            el.style.bottom = "12px";
+          });
+          return;
+        }
+
+        const M = Matter;
+        const engine = M.Engine.create();
+        engine.gravity.x = 0;
+        engine.gravity.y = 1;
+        const world = engine.world;
+
+        // Floor + side walls (kept thick + tall so nothing slips through).
+        M.World.add(world, [
+          M.Bodies.rectangle(W / 2, H + 25, W * 2, 50, { isStatic: true, friction: 1 }),
+          M.Bodies.rectangle(-25, H / 2, 50, H * 4, { isStatic: true, friction: 1 }),
+          M.Bodies.rectangle(W + 25, H / 2, 50, H * 4, { isStatic: true, friction: 1 }),
+        ]);
+
+        // ── Mouse drag (grab + drop) ──
+        // Matter.Mouse normally only fires while the cursor is over its
+        // element. That breaks drags when the cursor briefly outruns the
+        // pill or leaves the stage box. Fix: keep Matter's stage-bound
+        // listeners for mousedown/touchstart (where the grab originates),
+        // and add WINDOW-LEVEL mousemove + mouseup that keep mouse coords
+        // in sync no matter where the cursor goes. Coords are computed
+        // relative to the stage so they match Matter's world space.
+        const mouse = M.Mouse.create(stage);
+        const mouseConstraint = M.MouseConstraint.create(engine, {
+          mouse,
+          constraint: { stiffness: 0.18, damping: 0.1, render: { visible: false } },
+        });
+        M.World.add(world, mouseConstraint);
+        // Don't hijack the page scroll wheel when the cursor is over the stage.
+        mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
+        mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
+
+        // Global trackers so drags stay smooth outside the stage's box.
+        function syncMouseFromClient(clientX, clientY) {
+          const rect = stage.getBoundingClientRect();
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          mouse.absolute.x = x;
+          mouse.absolute.y = y;
+          mouse.position.x = x * mouse.scale.x + mouse.offset.x;
+          mouse.position.y = y * mouse.scale.y + mouse.offset.y;
+        }
+        window.addEventListener("mousemove", (ev) => {
+          syncMouseFromClient(ev.clientX, ev.clientY);
+          mouse.sourceEvents.mousemove = ev;
+        }, { passive: true });
+        window.addEventListener("mouseup", (ev) => {
+          syncMouseFromClient(ev.clientX, ev.clientY);
+          mouse.button = -1;
+          mouse.mouseupPosition.x = mouse.position.x;
+          mouse.mouseupPosition.y = mouse.position.y;
+          mouse.sourceEvents.mouseup = ev;
+        }, { passive: true });
+        window.addEventListener("touchmove", (ev) => {
+          if (!ev.touches.length) return;
+          const t = ev.touches[0];
+          syncMouseFromClient(t.clientX, t.clientY);
+          mouse.sourceEvents.mousemove = ev;
+        }, { passive: true });
+        window.addEventListener("touchend", (ev) => {
+          mouse.button = -1;
+          mouse.sourceEvents.mouseup = ev;
+        }, { passive: true });
+
+        // Build a body for each pill. Spawn just above the stage (in the
+        // small gap above it) — visible right away thanks to
+        // overflow: visible on the stage. They fall a short distance and
+        // settle inside the stage box.
+        const tracked = pills.map((el, i) => {
+          el.style.position = "absolute";
+          el.style.left = "0";
+          el.style.top = "0";
+          el.style.willChange = "transform";
+          el.style.visibility = "visible";
+          const w = el.offsetWidth, h = el.offsetHeight;
+          const startX = ((i + 0.5) / pills.length) * W + (Math.random() - 0.5) * 24;
+          const startY = -60 - i * 32;
+          const body = M.Bodies.rectangle(startX, startY, w, h, {
+            chamfer: { radius: h / 2 },
+            friction: 0.25,
+            frictionAir: 0.02,
+            restitution: 0.45,
+            density: 0.0018,
+            angle: (Math.random() - 0.5) * 0.6,
+          });
+          M.World.add(world, body);
+          return { el, body };
+        });
+
+        const runner = M.Runner.create();
+        M.Runner.run(runner, engine);
+
+        function syncDom() {
+          tracked.forEach(({ el, body }) => {
+            const x = body.position.x - el.offsetWidth / 2;
+            const y = body.position.y - el.offsetHeight / 2;
+            el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${body.angle}rad)`;
+          });
+          requestAnimationFrame(syncDom);
+        }
+        requestAnimationFrame(syncDom);
+
+        // Re-wake the simulation when window resizes (rough — we just re-pour)
+        window.addEventListener("resize", () => {
+          tracked.forEach(({ body }, i) => {
+            const startX = ((i + 0.5) / tracked.length) * stage.clientWidth + (Math.random() - 0.5) * 24;
+            M.Body.setPosition(body, { x: startX, y: -60 - i * 32 });
+            M.Body.setVelocity(body, { x: 0, y: 0 });
+            M.Body.setAngularVelocity(body, 0);
+          });
+        }, { passive: true });
+      }
+      // Defer the entire physics setup until the pills stage scrolls into
+      // view. This way pills drop in on arrival instead of having already
+      // settled by the time you reach the bottom of the page.
+      function armPillsObserver() {
+        const stage = document.getElementById("pills-stage");
+        if (!stage) return;
+        let started = false;
+        const trigger = () => {
+          if (started) return;
+          started = true;
+          initPills();
+        };
+        // Fallback: if IntersectionObserver isn't available, just init now.
+        if (typeof IntersectionObserver === "undefined") { trigger(); return; }
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some(e => e.isIntersecting)) {
+            trigger();
+            io.disconnect();
+          }
+        }, { threshold: 0.1, rootMargin: "0px 0px -10% 0px" });
+        io.observe(stage);
+        // Safety net: if the stage is already in view on load, fire now.
+        const r = stage.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) trigger();
+      }
+      if (document.readyState === "complete") armPillsObserver();
+      else window.addEventListener("load", armPillsObserver);
+    })();
+  </script>
+
+</body>
+</html>
