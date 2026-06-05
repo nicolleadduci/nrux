@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading screen · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       PALETTE — same colors as the homepage
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Dark theme — same palette as the AI Library page */
+      --bg-deep:     oklch(0.16 0.03 280);
+      --bg-base:     oklch(0.23 0.05 283);
+      --orb-purple:  oklch(0.72 0.18 265);
+      --orb-pink:    oklch(0.78 0.16 320);
+      --orb-aqua:    oklch(0.82 0.14 220);
+      --orb-violet:  oklch(0.68 0.20 295);
+      --orb-blush:   oklch(0.85 0.12 340);
+      --font-display: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+      --loader-exit-dur: 550ms;
+      --loader-exit-ease: cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       RESET
+       ══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--font-display);
+      color: #fff;
+      background: var(--bg-deep);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       PAGE — what's revealed once the loader exits
+       (in production this slot would hold the real homepage bundle.
+       Here it's a simple stand-in so you can review the flow.)
+       ══════════════════════════════════════════════════════════════ */
+    .page {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      background: oklch(0.96 0.02 285);
+      color: oklch(0.18 0.06 280);
+      text-align: center;
+      padding: 24px;
+      opacity: 0;
+      transform: translateY(24px) scale(0.985);
+      transition: opacity 420ms 100ms ease, transform 520ms 100ms var(--loader-exit-ease);
+    }
+    .page.reveal { opacity: 1; transform: none; }
+    .page h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 600;
+      letter-spacing: -0.045em;
+      line-height: 0.95;
+      margin-bottom: 18px;
+    }
+    .page p {
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+      color: oklch(0.42 0.06 280 / 0.85);
+      max-width: 44ch;
+      line-height: 1.55;
+    }
+    .page .replay {
+      margin-top: 36px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: oklch(0.22 0.06 280);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      box-shadow: 0 10px 30px -10px oklch(0.2 0.1 280 / 0.4);
+      transition: transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .page .replay:hover { transform: translateY(-1px); }
+
+    /* ══════════════════════════════════════════════════════════════
+       LOADER — sits on top of the page, exits with a slide-up
+       ══════════════════════════════════════════════════════════════ */
+    .loader {
+      position: fixed; inset: 0;
+      z-index: 9999;
+      display: grid; place-items: center;
+      overflow: hidden;
+      background: linear-gradient(160deg, var(--bg-base) 0%, var(--bg-deep) 100%);
+      transition:
+        transform var(--loader-exit-dur) var(--loader-exit-ease),
+        opacity   var(--loader-exit-dur) var(--loader-exit-ease),
+        clip-path var(--loader-exit-dur) var(--loader-exit-ease);
+      will-change: transform, clip-path;
+    }
+    /* Exit: slide up and reveal the page underneath, with a soft fade
+       so the gradients dissolve into the page below. */
+    .loader.exit {
+      transform: translateY(-104%);
+      opacity: 0.92;
+    }
+
+    /* ── Gradient field (Aceternity recipe) ──
+       Each blob is a div with a SOFT radial gradient (color → transparent
+       at 50%), blended together via mix-blend-mode: hard-light, then the
+       entire container is heavily blurred. This is the "blurry color
+       cloud" look — no sharp boundaries anywhere. */
+    .gradient-field {
+      position: absolute; inset: 0;
+      filter: blur(56px);
+      isolation: isolate;
+      pointer-events: none;
+    }
+    /* 8 blobs in different regions. Each blob lives inside a .blob-wrap
+       that handles mouse parallax (JS sets the wrap's translate based on
+       cursor distance from screen center). The blob itself only handles
+       its own color + continuous animation. Combined transform = parallax
+       drift + ambient orbit. */
+    .blob-wrap {
+      position: absolute;
+      pointer-events: none;
+      will-change: transform;
+      transition: transform 1200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .blob-wrap.w1 { top: -18%; left: -10%; width: 60%; height: 60%; }
+    .blob-wrap.w2 { top: 8%;   right: -14%; width: 55%; height: 55%; }
+    .blob-wrap.w3 { bottom: -12%; left: 22%; width: 50%; height: 50%; }
+    .blob-wrap.w4 { top: 32%; left: -18%; width: 50%; height: 50%; }
+    .blob-wrap.w5 { bottom: 4%; right: 8%; width: 50%; height: 50%; }
+    .blob-wrap.w6 { top: 14%; left: 35%; width: 36%; height: 36%; }
+    .blob-wrap.w7 { top: 55%; right: 18%; width: 38%; height: 38%; }
+    .blob-wrap.w8 { bottom: 18%; left: 4%; width: 32%; height: 32%; }
+
+    .blob {
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: screen;
+      opacity: 0.5;
+      will-change: transform;
+    }
+    .blob.b1 {
+      background: radial-gradient(circle at center, oklch(0.72 0.22 265 / 0.85) 0%, oklch(0.72 0.22 265 / 0) 50%) no-repeat;
+      animation: moveVertical 32s ease infinite;
+    }
+    .blob.b2 {
+      transform-origin: 70% 30%;
+      background: radial-gradient(circle at center, oklch(0.78 0.22 320 / 0.85) 0%, oklch(0.78 0.22 320 / 0) 50%) no-repeat;
+      animation: moveInCircle 26s reverse infinite;
+    }
+    .blob.b3 {
+      transform-origin: 30% 70%;
+      background: radial-gradient(circle at center, oklch(0.80 0.20 220 / 0.85) 0%, oklch(0.80 0.20 220 / 0) 50%) no-repeat;
+      animation: moveInCircle 42s linear infinite;
+    }
+    .blob.b4 {
+      background: radial-gradient(circle at center, oklch(0.68 0.22 295 / 0.85) 0%, oklch(0.68 0.22 295 / 0) 50%) no-repeat;
+      animation: moveHorizontal 36s ease infinite;
+      opacity: 0.75;
+    }
+    .blob.b5 {
+      transform-origin: 60% 40%;
+      background: radial-gradient(circle at center, oklch(0.85 0.14 340 / 0.85) 0%, oklch(0.85 0.14 340 / 0) 50%) no-repeat;
+      animation: moveInCircle 22s ease infinite;
+    }
+    .blob.b6 {
+      background: radial-gradient(circle at center, oklch(0.74 0.20 305 / 0.78) 0%, oklch(0.74 0.20 305 / 0) 50%) no-repeat;
+      animation: moveVertical 26s ease infinite;
+      animation-delay: -8s;
+      opacity: 0.7;
+    }
+    .blob.b7 {
+      background: radial-gradient(circle at center, oklch(0.82 0.18 200 / 0.8) 0%, oklch(0.82 0.18 200 / 0) 50%) no-repeat;
+      animation: moveHorizontal 30s ease infinite;
+      animation-delay: -12s;
+      opacity: 0.72;
+    }
+    .blob.b8 {
+      transform-origin: 80% 50%;
+      background: radial-gradient(circle at center, oklch(0.76 0.22 275 / 0.78) 0%, oklch(0.76 0.22 275 / 0) 50%) no-repeat;
+      animation: moveInCircle 18s linear infinite;
+      opacity: 0.7;
+    }
+
+    /* Cursor-following blob — same recipe, just a soft violet that lazily
+       eases toward the pointer for that signature Aceternity touch. */
+    .blob.interactive {
+      width: 70%; height: 70%;
+      top: -35%; left: -35%;
+      background: radial-gradient(circle at center, oklch(0.72 0.22 285 / 0.78) 0%, oklch(0.72 0.22 285 / 0) 50%) no-repeat;
+      opacity: 0.7;
+    }
+
+    /* Three motion patterns + an offset alias for variety */
+    @keyframes moveVertical {
+      0%   { transform: translateY(-22%); }
+      50%  { transform: translateY(22%); }
+      100% { transform: translateY(-22%); }
+    }
+    @keyframes moveHorizontal {
+      0%   { transform: translateX(-22%) translateY(-6%); }
+      50%  { transform: translateX(22%)  translateY(6%);  }
+      100% { transform: translateX(-22%) translateY(-6%); }
+    }
+    @keyframes moveInCircle {
+      0%   { transform: rotate(0deg); }
+      50%  { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Subtle "noise" overlay using SVG fractal-noise — keeps it from
+       looking too plastic / clean. */
+    .loader::after {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.45;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    /* Centered text */
+    .loader-content {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      padding: 0 24px;
+      animation: contentFade 340ms 40ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    @keyframes contentFade {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .loader-sub {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2.6vw, 2rem);
+      font-weight: 500;
+      letter-spacing: -0.018em;
+      color: oklch(1 0 0 / 0.92);
+      max-width: 24ch;
+      margin: 0 auto;
+      line-height: 1.35;
+      text-shadow: 0 2px 24px oklch(0.65 0.18 295 / 0.3);
+    }
+    .loader-sub .dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: oklch(1 0 0 / 0.6);
+      vertical-align: middle;
+      margin: 0 10px 4px 10px;
+      animation: dotPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes dotPulse { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .blob, .loader-title, .loader-sub .dot { animation: none; }
+      .loader { transition-duration: 400ms; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- PAGE — your homepage would mount here in production -->
+  <main class="page" id="page" aria-hidden="true">
+    <h1>Nicolle Rodrigues</h1>
+    <p>This is where your real homepage renders. The bundled <code>index.html</code> would mount here once the loader exits.</p>
+    <button class="replay" onclick="replay()">Replay loader</button>
+  </main>
+
+  <!-- LOADER -->
+  <div class="loader" id="loader" role="status" aria-label="Loading">
+
+    <div class="gradient-field" aria-hidden="true">
+      <span class="blob-wrap w1" data-depth="80"><span class="blob b1"></span></span>
+      <span class="blob-wrap w2" data-depth="60"><span class="blob b2"></span></span>
+      <span class="blob-wrap w3" data-depth="70"><span class="blob b3"></span></span>
+      <span class="blob-wrap w4" data-depth="50"><span class="blob b4"></span></span>
+      <span class="blob-wrap w5" data-depth="65"><span class="blob b5"></span></span>
+      <span class="blob-wrap w6" data-depth="40"><span class="blob b6"></span></span>
+      <span class="blob-wrap w7" data-depth="55"><span class="blob b7"></span></span>
+      <span class="blob-wrap w8" data-depth="35"><span class="blob b8"></span></span>
+      <span class="blob interactive" id="interactiveBlob"></span>
+    </div>
+
+    <div class="loader-content">
+      <p class="loader-sub">
+        Powered by AI<span class="dot"></span>caffeine<span class="dot"></span>and curiosity.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    /* ── Mouse-driven parallax for every blob ──
+       Tracks the cursor and translates each .blob-wrap by a depth value
+       (data-depth) scaled by the cursor's distance from screen center.
+       Big-depth blobs feel close (move more), small-depth blobs feel far
+       (move less). Smoothing via lerp so motion feels viscous.
+       Also drives the interactive (cursor-following) blob. */
+    (function setupMouseParallax() {
+      const wraps  = Array.from(document.querySelectorAll('.blob-wrap'));
+      const inter  = document.getElementById('interactiveBlob');
+      const loader = document.getElementById('loader');
+      if (!wraps.length && !inter) return;
+
+      // Mouse target (clientX/Y) and smoothed values
+      let tx = window.innerWidth  / 2;
+      let ty = window.innerHeight / 2;
+      let sx = tx, sy = ty;             // smoothed cursor (for interactive blob)
+      let nx = 0,  ny = 0;              // smoothed normalized -1..1 (for parallax)
+
+      function onMove(x, y) { tx = x; ty = y; }
+
+      window.addEventListener('pointermove', (e) => onMove(e.clientX, e.clientY), { passive: true });
+      window.addEventListener('touchmove', (e) => {
+        const t = e.touches[0]; if (!t) return;
+        onMove(t.clientX, t.clientY);
+      }, { passive: true });
+
+      function tick() {
+        // Smooth toward target
+        sx += (tx - sx) * 0.08;
+        sy += (ty - sy) * 0.08;
+
+        // Normalized cursor position (-1 to 1 from center)
+        const cx = window.innerWidth  / 2;
+        const cy = window.innerHeight / 2;
+        const ntx = (sx - cx) / cx;
+        const nty = (sy - cy) / cy;
+        // Lerp the normalized values a touch more for an even softer feel
+        nx += (ntx - nx) * 0.12;
+        ny += (nty - ny) * 0.12;
+
+        // Apply parallax to every wrap
+        for (const el of wraps) {
+          const d = parseFloat(el.dataset.depth) || 30;
+          el.style.transform = `translate3d(${(nx * d).toFixed(1)}px, ${(ny * d).toFixed(1)}px, 0)`;
+        }
+        // Drive the interactive blob (chases the actual cursor pos)
+        if (inter) {
+          inter.style.transform =
+            `translate3d(${(sx - cx).toFixed(1)}px, ${(sy - cy).toFixed(1)}px, 0)`;
+        }
+
+        if (!loader.classList.contains('exit')) {
+          requestAnimationFrame(tick);
+        }
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    // The loader holds for HOLD_MS, then slides up to reveal the page.
+    // In production we'd tie this to actual asset-load events or the bundler's
+    // "Ready" signal so the loader stays exactly as long as needed.
+    const HOLD_MS = 2650;
+
+    function exitLoader() {
+      const loader = document.getElementById('loader');
+      const page   = document.getElementById('page');
+      loader.classList.add('exit');
+      page.classList.add('reveal');
+      page.setAttribute('aria-hidden', 'false');
+      // After the exit completes, drop the loader from the DOM tree so it
+      // can't catch focus or screen-readers.
+      setTimeout(() => { loader.style.display = 'none'; }, 600);
+    }
+
+    function replay() {
+      const loader = document.getElementById('loader');
+      const page   = document.getElementById('page');
+      loader.style.display = '';
+      // Force a reflow so removing .exit + applying transition takes effect
+      void loader.offsetWidth;
+      loader.classList.remove('exit');
+      page.classList.remove('reveal');
+      page.setAttribute('aria-hidden', 'true');
+      setTimeout(exitLoader, HOLD_MS);
+    }
+
+    // First run
+    setTimeout(exitLoader, HOLD_MS);
+  </script>
+</body>
+</html>
