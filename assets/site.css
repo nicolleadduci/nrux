@@ -725,3 +725,28 @@ body::after {
 .sound-on { position: absolute; z-index: 3; left: clamp(14px, 2vw, 28px); bottom: clamp(14px, 2vw, 28px); display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 999px; background: var(--blue); color: #fff; font: 650 15px var(--f-display); box-shadow: 0 14px 30px -14px rgb(12 12 13 / 0.6); transition: transform 0.3s var(--ease); }
 .sound-on:hover { transform: translateY(-2px); }
 .with-sound .sound-on { display: none; }
+
+/* drawn arrows */
+.ico { display: inline-block; flex: none; vertical-align: -0.125em; }
+.arr { display: inline-flex; align-items: center; }
+.back { display: inline-flex; align-items: center; gap: 8px; }
+.direct a .arr { font-size: 0.9em; transition: transform 0.4s var(--ease); }
+.direct a:hover .arr { transform: translate(2px, -2px); }
+
+/* mobile: Writing rows stack (date, title + excerpt, category + arrow) */
+@media (max-width: 760px) {
+  .post-row a { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date date" "body body" "cat arr"; gap: 10px 16px; }
+  .post-row .p-date { grid-area: date; }
+  .post-row a > div { grid-area: body; }
+  .post-row .p-cat { grid-area: cat; grid-column: auto; }
+  .post-row .arr { grid-area: arr; font-size: 22px; }
+  .post-row h2 { font-size: 28px; line-height: 1.05; }
+  .post-row p { font-size: 15px; }
+}
+/* hidden form controls and the About badge must not widen the page */
+.form { position: relative; }
+.form .pills input, .form .sr-only { left: 0; top: 0; }
+html, body { overflow-x: clip; }
+.direct a .arr { font-size: 1.15em; }
+.foot-big .ln2 { white-space: nowrap; }
+.foot-big .arr .ico { width: 0.78em; height: 0.78em; vertical-align: -0.02em; }

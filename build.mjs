@@ -14,7 +14,11 @@ const reels = existsSync(join(ROOT, "src/reels.json")) ? JSON.parse(readFileSync
 const VERSION = Date.now().toString(36);
 
 const esc = (s = "") => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const ARR = "→";
+// Arrows are drawn, not typed: one stroke icon that scales with the text (1em) and takes currentColor.
+const ico = (d, cls) => `<svg class="ico${cls ? " " + cls : ""}" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const ARR = ico("M4 12h16M13 5l7 7-7 7");
+const ARR_L = ico("M20 12H4M11 5l-7 7 7 7");
+const ARR_NE = ico("M7 17 17 7M8 7h9v9");
 const bySlug = Object.fromEntries(projects.map((p) => [p.slug, p]));
 const linkedin = profile.links.find((l) => l.label === "LinkedIn");
 
@@ -269,7 +273,7 @@ projects.forEach((p, i) => {
     body: (b) => `
 <article>
   <header class="cs-head wrap">
-    <a class="back" href="${b}work.html">← All work</a>
+    <a class="back" href="${b}work.html">${ARR_L} All work</a>
     <h1 class="cs-title d-xl" data-split>${esc(p.title)}</h1>
     <div class="cs-sub">
       <div>
@@ -286,7 +290,7 @@ projects.forEach((p, i) => {
       <div><dt>Role</dt><dd>${esc(p.role)}</dd></div>
       <div><dt>Built with</dt><dd class="tools">${p.stack.map((s) => `<span class="chip line">${esc(s)}</span>`).join("")}</dd></div>
     </dl>
-    ${p.link ? `<p style="margin:18px 0 0"><a class="ext-link" href="${p.link.href}" target="_blank" rel="noopener">${esc(p.link.label)} ↗</a></p>` : ""}
+    ${p.link ? `<p style="margin:18px 0 0"><a class="ext-link" href="${p.link.href}" target="_blank" rel="noopener">${esc(p.link.label)} ${ARR_NE}</a></p>` : ""}
   </div>
 
   ${p.brief || p.move ? `<section class="sec wrap" aria-label="Brief and approach"${!p.stats ? ' style="padding-bottom:0"' : ""}>
@@ -314,7 +318,7 @@ projects.forEach((p, i) => {
 
   <div class="wrap">
     <a class="next" href="${b}work/${next.slug}.html" data-cursor="Next" data-hover>
-      <span class="d-xl">${esc(next.title)} ${ARR}</span>
+      <span class="d-xl">${esc(next.title)} <span class="arr">${ARR}</span></span>
       <div class="next-media media">${coverOf(next, b, { manual: true })}</div>
     </a>
   </div>
@@ -497,13 +501,13 @@ articles.forEach((a, i) => {
 <div class="progress" aria-hidden="true"></div>
 <article>
   <header class="page-head wrap">
-    <a class="back" href="${b}articles.html">← All writing</a>
+    <a class="back" href="${b}articles.html">${ARR_L} All writing</a>
     <h1 class="d-l article-head" data-split>${esc(a.title)}</h1>
     <div class="article-meta rv"><span class="chip line">${esc(a.category)}</span><span class="chip line">${a.date}</span><span class="chip line">${a.read} read</span><span class="chip line">by ${esc(profile.name)}</span></div>
   </header>
   <div class="wrap"><div class="article rv">${a.body.join("\n")}</div></div>
   <div class="wrap" style="margin-top:clamp(60px,8vw,120px)">
-    <a class="next" href="${b}articles/${next.slug}.html" data-cursor="Read"><small>Next read</small><span class="d-l" style="display:block;max-width:18ch">${esc(next.title)} ${ARR}</span></a>
+    <a class="next" href="${b}articles/${next.slug}.html" data-cursor="Read"><small>Next read</small><span class="d-l" style="display:block;max-width:18ch">${esc(next.title)} <span class="arr">${ARR}</span></span></a>
   </div>
 </article>`,
   });
@@ -524,8 +528,8 @@ page({
     <div class="rv">
       <p class="lead">I lead with empathy and back it up with data. If you've got a product, site, tool or film that needs both, send a note.</p>
       <div class="direct">
-        <a href="mailto:${profile.email}" data-cursor="Email">${esc(profile.email)} <span>↗</span></a>
-        ${profile.links.map((l) => `<a href="${l.href}" target="_blank" rel="noopener">${l.label} <span>↗</span></a>`).join("")}
+        <a href="mailto:${profile.email}" data-cursor="Email">${esc(profile.email)} <span class="arr">${ARR_NE}</span></a>
+        ${profile.links.map((l) => `<a href="${l.href}" target="_blank" rel="noopener">${l.label} <span class="arr">${ARR_NE}</span></a>`).join("")}
       </div>
     </div>
     <form class="form rv" id="contact-form" data-email="${profile.email}" novalidate>
