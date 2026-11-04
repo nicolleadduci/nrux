@@ -272,7 +272,7 @@
   });
 
   /* case hero: swap the muted loop for the full film, with sound */
-  $(".cs-hero [data-film]").forEach((h) => {
+  $$(".cs-hero [data-film]").forEach((h) => {
     $(".sound-on", h)?.addEventListener("click", () => {
       const v = $("video", h);
       if (!v) return;
