@@ -286,7 +286,7 @@ projects.forEach((p, i) => {
         <p class="lead rv">${esc(p.summary)}</p>
         <div class="cs-chips rv"><span class="chip line">${KINDS[p.kind]}</span>${p.award ? `<span class="chip blue">${esc(p.award)}</span>` : ""}${p.status ? `<span class="chip">${esc(p.status)}</span>` : ""}</div>
       </div>
-      ${p.prompt ? `<div class="prompt-line rv" style="--d:120ms"><span class="pr">&gt; </span>${esc(p.prompt)}</div>` : ""}
+      ${p.prompt && !p.hidePrompt ? `<div class="prompt-line rv" style="--d:120ms"><span class="pr">&gt; </span>${esc(p.prompt)}</div>` : ""}
     </div>
   </header>
   <div class="cs-hero wrap rv"><div class="media" data-hover${(p.films?.[0]?.src && !p.films[0].silent) ? ` data-film="${b}${p.films[0].src}"` : ""}>${coverOf(p, b, p.cover.type === "site" ? { manual: true } : {})}${(p.films?.[0]?.src && !p.films[0].silent) ? `<button class="sound-on" data-cursor="Play">Watch with sound <span aria-hidden="true">♪</span></button>` : ""}</div></div>
