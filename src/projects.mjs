@@ -394,8 +394,10 @@ export const projects = [
     components: [
       { name: "Desktop", media: site("media/lanco-homepage/site-v3.jpg", "lanco.com") },
       { name: "Mobile", media: [phone("media/lanco-homepage/site-mobile-v3.jpg")] },
-      { name: "Saturday. Sunscreen. Lanco.", media: img("media/lanco-homepage/s-sat.jpg") },
-      { name: "Best sellers", media: img("media/lanco-homepage/s-best.jpg") },
+      { name: "Hero · intro animation", wide: true, media: v("media/lanco-homepage/i-hero.mp4", "media/lanco-homepage/i-hero.jpg") },
+      { name: "Best sellers · hover", media: v("media/lanco-homepage/i-cards.mp4", "media/lanco-homepage/i-cards.jpg") },
+      { name: "DIY / Pro switch", media: v("media/lanco-homepage/i-switch.mp4", "media/lanco-homepage/i-switch.jpg") },
+      { name: "Tested on real jobs · scroll reveal", media: v("media/lanco-homepage/i-proof.mp4", "media/lanco-homepage/i-proof.jpg") },
       { name: "The Home Depot", media: img("media/lanco-homepage/s-hd.jpg") },
     ],
   },
