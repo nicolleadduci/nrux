@@ -26,7 +26,7 @@ export const profile = {
 export const repos = [
   {
     name: "reference-to-motion",
-    desc: "Turn a reference video into a brand motion film: measured frame by frame, cut to the beat, built in Remotion.",
+    desc: "Turn a reference video into a brand motion video: measured frame by frame, cut to the beat, built in Remotion.",
     lang: "JavaScript",
     stars: 2,
     tags: ["claude-code", "remotion", "music-sync"],
@@ -63,7 +63,7 @@ export const toolbox = [
   { name: "transcript", what: "Local, offline word-level transcription so client footage never leaves the machine.", tag: "Skill" },
   { name: "lufs-meter", what: "Real BS.1770 loudness measurement in Node, for broadcast-ready mixes.", tag: "Tool" },
   { name: "cutout-studio", what: "Flood-fill product cutouts that keep white detail and drop baked-in shadows.", tag: "Tool" },
-  { name: "make-media", what: "One command from a master video to a web loop, poster and film.", tag: "Tool" },
+  { name: "make-media", what: "One command from a master video to a web loop, poster and full video.", tag: "Tool" },
 ];
 
 export const stack = [

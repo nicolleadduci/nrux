@@ -161,7 +161,7 @@ const consoleData = consoleList.map((p) => ({ prompt: p.prompt, title: p.title, 
 page({
   file: "index.html",
   title: `${profile.name} · ${profile.title}`,
-  desc: `${profile.line} ${profile.sub}`,
+  desc: profile.line,
   cur: "home",
   body: (b) => `
 <section class="hero wrap" aria-labelledby="hero-name">
@@ -172,7 +172,6 @@ page({
   <div class="hero-bottom">
     <div>
       <p class="d-m" data-split>${profile.lineHtml}</p>
-      <p class="lead mute">${esc(profile.sub)}</p>
       <div class="hero-cta"><a class="btn" href="${b}work.html">See the work <span class="arr">${ARR}</span></a><a class="btn ghost" href="${b}lab.html">Inside the Lab</a></div>
       <p class="hero-status mono"><span class="status"><i></i></span>${esc(profile.title)} · ${esc(profile.location)} · open to select projects</p>
     </div>
@@ -195,8 +194,8 @@ page({
 
 <section class="sec wrap" aria-labelledby="sel">
   <div class="sec-head">
-    <h2 class="d-xl" id="sel" data-split>Made, then shipped.</h2>
-    <p class="lead mute rv">Product, web, campaigns, AI tooling and motion.</p>
+    <h2 class="d-xl" id="sel" data-split>Design that gets you results</h2>
+    <p class="lead mute rv">Coding can be prompted but creativity and design are still human superpowers.</p>
   </div>
   <div class="feat">${featured.map((p) => card(p, b)).join("")}</div>
   <a class="all-link" href="${b}work.html" data-cursor="All"><span>All projects</span> <span class="arr">${ARR}</span></a>
@@ -265,8 +264,8 @@ projects.forEach((p, i) => {
   const next = projects[(i + 1) % projects.length];
   const films = p.films || [];
   const comps = p.components || [];
-  const filmsSec = (b) => `${films.length ? `<section class="sec wrap" aria-label="Films">
-    <div class="sec-head"><h2 class="d-l">${films.length > 1 ? "The films" : "Watch the film"}</h2>${rel ? `<p class="lead mute">Made with my <a class="ext-link" style="font:inherit" href="${b}work/${rel.slug}.html">${esc(rel.title)}</a> skill.</p>` : ""}</div>
+  const filmsSec = (b) => `${films.length ? `<section class="sec wrap" aria-label="Videos">
+    <div class="sec-head"><h2 class="d-l">${films.length > 1 ? "The videos" : "Watch the video"}</h2>${rel ? `<p class="lead mute">Made with my <a class="ext-link" style="font:inherit" href="${b}work/${rel.slug}.html">${esc(rel.title)}</a> skill.</p>` : ""}</div>
     <div class="films">${films.map((f) => `<figure>${filmBlock(f, b)}<figcaption><b>${esc(f.title)}</b>${f.note ? `<span>${esc(f.note)}</span>` : ""}</figcaption></figure>`).join("")}</div>
   </section>` : ""}`;
   const rel = p.related && bySlug[p.related];
@@ -531,7 +530,7 @@ page({
 <section class="wrap" style="padding-bottom:clamp(80px,10vw,160px)">
   <div class="contact-grid">
     <div class="rv">
-      <p class="lead">I lead with empathy and back it up with data. If you've got a product, site, tool or film that needs both, send a note.</p>
+      <p class="lead">I lead with empathy and back it up with data. If you've got a product, site, tool or video that needs both, send a note.</p>
       <div class="direct">
         <a href="mailto:${profile.email}" data-cursor="Email">${esc(profile.email)} <span class="arr">${ARR_NE}</span></a>
         ${profile.links.map((l) => `<a href="${l.href}" target="_blank" rel="noopener">${l.label} <span class="arr">${ARR_NE}</span></a>`).join("")}

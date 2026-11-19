@@ -27,6 +27,36 @@
       "source": "/loading-preview",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/work/sbt-films",
+      "destination": "/work/sbt-brand-launch",
+      "permanent": true
+    },
+    {
+      "source": "/work/sbt-films.html",
+      "destination": "/work/sbt-brand-launch",
+      "permanent": true
+    },
+    {
+      "source": "/work/reference-to-motion-film",
+      "destination": "/work/reference-to-motion-teaser",
+      "permanent": true
+    },
+    {
+      "source": "/work/reference-to-motion-film.html",
+      "destination": "/work/reference-to-motion-teaser",
+      "permanent": true
+    },
+    {
+      "source": "/work/mint-film",
+      "destination": "/work/mint-video",
+      "permanent": true
+    },
+    {
+      "source": "/work/mint-film.html",
+      "destination": "/work/mint-video",
+      "permanent": true
     }
   ]
 }
