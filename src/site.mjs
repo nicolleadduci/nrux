@@ -91,6 +91,7 @@ export const awards = [
 ];
 
 export const education = [
+  { year: "2026", name: "AI and UX in Practice - Workshop", org: "UX Unicornio - Leandro Rezende UXMC NN/g Instructor" },
   { year: "2020", name: "NN/g UX Certification", org: "University of Arkansas" },
   { year: "2014 – 15", name: "BFA Graphic Design", org: "DePaul University, Chicago" },
   { year: "2012 – 14", name: "BFA Industrial Design", org: "UFCG, Brazil · Science Without Borders scholar" },
