@@ -69,7 +69,7 @@ export const projects = [
     featured: true,
     summary: "A short teaser for my reference-to-motion skill, made with the skill itself.",
     prompt: "show what the skill does in under a minute",
-    cover: v("media/skill-film/loop.mp4", "media/skill-film/poster.jpg"),
+    cover: v("media/skill-film/preview.mp4", "media/skill-film/poster.jpg"),
     films: [{ title: "Reference to Motion", src: "media/skill-film/film.mp4", poster: "media/skill-film/poster.jpg" }],
     related: "reference-to-motion",
   },
