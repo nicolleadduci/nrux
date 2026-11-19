@@ -765,3 +765,6 @@ html, body { overflow-x: clip; }
   .hero-bottom > div:first-child { display: flex; flex-direction: column; }
   .hero-bottom > div:first-child > .hero-cta { margin-top: auto; padding-top: 28px; }
 }
+
+.award b { display: block; }
+.award .award-org { display: block; margin-top: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: #fff; }

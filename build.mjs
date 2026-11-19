@@ -453,7 +453,7 @@ page({
 
 <section class="wrap" aria-labelledby="aw-h">
   <div class="sec-head"><h2 class="d-l" id="aw-h" data-split>Awards &amp; Recognition</h2></div>
-  <div class="award-grid">${awards.map((a, i) => `<div class="award rv" style="--d:${i * 50}ms"><b>${esc(a.name)}</b><span class="mute"><span class="n">${a.year}</span> · ${esc(a.for)}</span></div>`).join("")}</div>
+  <div class="award-grid">${awards.map((a, i) => `<div class="award rv" style="--d:${i * 50}ms"><div><b>${esc(a.name)}</b><span class="award-org">Azima TIM Awards</span></div><span class="mute"><span class="n">${a.year}</span> · ${esc(a.for)}</span></div>`).join("")}</div>
 </section>
 
 <section class="sec wrap" aria-labelledby="fun-h">
