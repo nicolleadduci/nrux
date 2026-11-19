@@ -92,6 +92,8 @@ export const projects = [
       { name: "Client stories", media: img("media/top-dog-law/s-clients.jpg") },
       { name: "Free until you win", media: img("media/top-dog-law/s-free.jpg") },
       { name: "Practice areas", media: img("media/top-dog-law/s-areas.jpg") },
+      { name: "Mobile · Hero, case form, case results", wide: true, media: [phoneStill("media/top-dog-law/m-hero.jpg", "Mobile hero"), phoneStill("media/top-dog-law/m-form.jpg", "Case form"), phoneStill("media/top-dog-law/m-results.jpg", "Case results")] },
+      { name: "Mobile · Client stories, free until you win, practice areas", wide: true, media: [phoneStill("media/top-dog-law/m-clients.jpg", "Client stories"), phoneStill("media/top-dog-law/m-free.jpg", "Free until you win"), phoneStill("media/top-dog-law/m-areas.jpg", "Practice areas")] },
     ],
   },
   {
@@ -120,10 +122,7 @@ export const projects = [
       { name: "Product page", media: site("media/liquid-rubber/product.jpg", "liquidrubber.com") },
       { name: "Project walkthrough", media: site("media/liquid-rubber/walkthrough.jpg", "liquidrubber.com") },
       { name: "Project walkthrough · Individual", media: site("media/liquid-rubber/walkthrough-project.jpg", "liquidrubber.com") },
-      { name: "Sweepstakes", media: site("media/liquid-rubber/sweepstakes.jpg", "liquidrubber.com") },
-      { name: "Mobile", media: img("media/liquid-rubber/mobile.jpg") },
-      { name: "Fonts", media: img("media/liquid-rubber/brand-type.jpg") },
-      { name: "Colors", media: img("media/liquid-rubber/brand-color.jpg") },
+      { name: "Mobile", wide: true, media: img("media/liquid-rubber/mobile.jpg") },
     ],
   },
   {
