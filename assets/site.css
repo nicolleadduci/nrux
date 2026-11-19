@@ -154,7 +154,7 @@ body::after {
 /* ── reveal ───────────────────────────────────────────────── */
 .js .rv { opacity: 0; transform: translateY(28px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); transition-delay: var(--d, 0ms); }
 .js .rv.in { opacity: 1; transform: none; }
-.split .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.06em; margin-bottom: -0.06em; }
+.split .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.22em; margin-bottom: -0.22em; }
 .split .w > span { display: inline-block; transform: translateY(105%); transition: transform 1s var(--ease); transition-delay: calc(var(--i) * 45ms + var(--d, 0ms)); }
 .split.in .w > span, html:not(.js) .split .w > span { transform: none; }
 
@@ -758,3 +758,10 @@ html, body { overflow-x: clip; }
 
 /* about: lift the portrait */
 @media (min-width: 861px) { .about-intro .portrait { margin-top: -44px !important; } }
+
+/* hero: tagline lines up with the top of the console, CTAs sit at the bottom */
+@media (min-width: 1001px) {
+  .hero-bottom { align-items: stretch; }
+  .hero-bottom > div:first-child { display: flex; flex-direction: column; }
+  .hero-bottom > div:first-child > .hero-cta { margin-top: auto; padding-top: 28px; }
+}
