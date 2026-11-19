@@ -154,7 +154,9 @@ function repoCard(r, i) {
 
 /* ── HOME ──────────────────────────────────────────────────── */
 const featured = projects.filter((p) => p.featured);
-const consoleData = featured.map((p) => ({ prompt: p.prompt, title: p.title, kind: KINDS[p.kind], stack: p.stack.slice(0, 3).join(" + "), href: `work/${p.slug}.html` }));
+// the hero console starts with the `hero` project; the grid below keeps the data order
+const consoleList = [...featured.filter((p) => p.hero), ...featured.filter((p) => !p.hero)];
+const consoleData = consoleList.map((p) => ({ prompt: p.prompt, title: p.title, kind: KINDS[p.kind], stack: p.stack.slice(0, 3).join(" + "), href: `work/${p.slug}.html` }));
 
 page({
   file: "index.html",
@@ -179,10 +181,10 @@ page({
         <div class="console-head"><span class="dots"><i></i><i></i><i></i></span></div>
         <div class="console-prompt" aria-live="polite"><span class="pr">&gt; </span><span class="txt"></span><span class="cur"></span></div>
         <div class="console-log"></div>
-        <div class="console-steps">${featured.map((p) => `<button aria-label="Show ${esc(p.title)}"></button>`).join("")}</div>
+        <div class="console-steps">${consoleList.map((p) => `<button aria-label="Show ${esc(p.title)}"></button>`).join("")}</div>
       </div>
-      <a class="console-out" href="${b}work/${featured[0].slug}.html" data-cursor="Open">
-        ${featured.map((p) => `<div class="frame">${coverOf(p, b, { manual: true })}</div>`).join("")}
+      <a class="console-out" href="${b}work/${consoleList[0].slug}.html" data-cursor="Open">
+        ${consoleList.map((p) => `<div class="frame">${coverOf(p, b, { manual: true })}</div>`).join("")}
         <div class="scan"></div>
         <div class="cap"><b></b><span class="chip"></span></div>
       </a>

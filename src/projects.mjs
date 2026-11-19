@@ -16,7 +16,7 @@
 // components     [{ name, media }]  the pieces, shown as a grid (videos play in view)
 //                media types: video | image | site | phone | terminal, optional ratio: "1440 / 640"
 // films          [{ title, note, src, poster }] full films with sound (or embed: YouTube/Vimeo URL)
-// featured       homepage, in this order (the first one is the hero prompt)
+// featured       homepage grid, in this order. hero: true = first prompt in the hero console
 // ─────────────────────────────────────────────────────────────
 
 export const KINDS = {
@@ -35,6 +35,41 @@ const phoneStill = (src, alt) => ({ type: "phone", src, alt, still: true });
 
 export const projects = [
   {
+    slug: "b2b-row-cannes",
+    title: "B2B Row at Cannes",
+    kind: "web",
+    client: "The Imaginarium",
+    role: "Web design, coded event page",
+    stack: ["HTML / CSS / JS", "Collage + motion", "Luma", "Responsive"],
+    featured: true,
+    summary: "An event page for B2B Row at Cannes, built from collage and motion.",
+    prompt: "make an event page for Cannes that never sits still",
+    cover: v("media/b2b-row/hero.mp4", "media/b2b-row/hero.jpg"),
+    films: [{ title: "Page walkthrough", src: "media/b2b-row/walkthrough.mp4", poster: "media/b2b-row/about.jpg", silent: true }],
+    components: [
+      { name: "Photo reel", wide: true, media: v("media/b2b-row/reel.mp4", "media/b2b-row/reel.jpg", "1440 / 620") },
+      { name: "Center of gravity", media: v("media/b2b-row/about.mp4", "media/b2b-row/about.jpg") },
+      { name: "Join us", media: v("media/b2b-row/join.mp4", "media/b2b-row/join.jpg") },
+      { name: "Footer", wide: true, media: v("media/b2b-row/footer.mp4", "media/b2b-row/footer.jpg") },
+      { name: "Mobile", media: [phoneStill("media/b2b-row/m-hero.jpg", "Hero"), phoneStill("media/b2b-row/m-agenda.jpg", "Agenda"), phoneStill("media/b2b-row/m-join.jpg", "Join us")] },
+    ],
+    link: { label: "tima-events.vercel.app/b2b-row", href: "https://tima-events.vercel.app/b2b-row" },
+  },
+  {
+    slug: "reference-to-motion-film",
+    title: "Reference to Motion Film",
+    kind: "motion",
+    client: "nr/ux · Open source",
+    role: "Motion design, built in code",
+    stack: ["reference-to-motion", "Remotion", "Claude Code"],
+    featured: true,
+    summary: "A short film about my reference-to-motion skill, made with the skill itself.",
+    prompt: "show what the skill does in under a minute",
+    cover: v("media/skill-film/loop.mp4", "media/skill-film/poster.jpg"),
+    films: [{ title: "Reference to Motion", src: "media/skill-film/film.mp4", poster: "media/skill-film/poster.jpg" }],
+    related: "reference-to-motion",
+  },
+  {
     slug: "rootlogic",
     title: "Rootlogic",
     kind: "product",
@@ -42,6 +77,7 @@ export const projects = [
     role: "Brand, product strategy, UX",
     stack: ["Product plan", "Landing page", "Claude Code"],
     featured: true,
+    hero: true,
     status: "In progress",
     summary: "A daily field assistant that tells growers which block needs them first.",
     prompt: "tell a grower what changed overnight and which block to check first",
@@ -253,7 +289,7 @@ export const projects = [
     featured: true,
     summary: "Two campaign directions for a paints and coatings brand.",
     prompt: "show the people behind the finished project, not just the product",
-    cover: img("media/lanco/c1-ads.jpg"),
+    cover: img("media/lanco/c2-product.jpg"),
     components: [
       { name: "Positioning", media: img("media/lanco/positioning.jpg") },
       { name: "You have what it takes · Ads", media: img("media/lanco/c1-ads.jpg") },
