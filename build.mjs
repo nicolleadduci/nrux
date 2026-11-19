@@ -265,6 +265,10 @@ projects.forEach((p, i) => {
   const next = projects[(i + 1) % projects.length];
   const films = p.films || [];
   const comps = p.components || [];
+  const filmsSec = (b) => `${films.length ? `<section class="sec wrap" aria-label="Films">
+    <div class="sec-head"><h2 class="d-l">${films.length > 1 ? "The films" : "Watch the film"}</h2>${rel ? `<p class="lead mute">Made with my <a class="ext-link" style="font:inherit" href="${b}work/${rel.slug}.html">${esc(rel.title)}</a> skill.</p>` : ""}</div>
+    <div class="films">${films.map((f) => `<figure>${filmBlock(f, b)}<figcaption><b>${esc(f.title)}</b>${f.note ? `<span>${esc(f.note)}</span>` : ""}</figcaption></figure>`).join("")}</div>
+  </section>` : ""}`;
   const rel = p.related && bySlug[p.related];
   page({
     file: `work/${p.slug}.html`,
@@ -306,15 +310,14 @@ projects.forEach((p, i) => {
     <div class="stats rv">${p.stats.map((s) => `<div class="stat"><b>${esc(s.v)}</b><span>${esc(s.l)}</span></div>`).join("")}</div>
   </section>` : ""}
 
-  ${films.length ? `<section class="sec wrap" aria-label="Films">
-    <div class="sec-head"><h2 class="d-l">${films.length > 1 ? "The films" : "Watch the film"}</h2>${rel ? `<p class="lead mute">Made with my <a class="ext-link" style="font:inherit" href="${b}work/${rel.slug}.html">${esc(rel.title)}</a> skill.</p>` : ""}</div>
-    <div class="films">${films.map((f) => `<figure>${filmBlock(f, b)}<figcaption><b>${esc(f.title)}</b>${f.note ? `<span>${esc(f.note)}</span>` : ""}</figcaption></figure>`).join("")}</div>
-  </section>` : ""}
+  ${p.filmLast ? "" : filmsSec(b)}
 
   ${comps.length ? `<section class="sec wrap" aria-labelledby="comp-h">
     <div class="sec-head"><h2 class="d-l" id="comp-h">${p.kind === "campaign" ? "The campaign" : p.kind === "ai" ? "In use" : "Components"}</h2></div>
     <div class="comps">${comps.map((c) => component(c, p, b)).join("")}</div>
   </section>` : ""}
+
+  ${p.filmLast ? filmsSec(b) : ""}
 
   ${!films.length && !comps.length ? '<div style="height:clamp(60px,8vw,120px)"></div>' : ""}
 

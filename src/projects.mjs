@@ -45,12 +45,12 @@ export const projects = [
     summary: "An event page for B2B Row at Cannes, built from collage and motion.",
     prompt: "make an event page for Cannes that never sits still",
     cover: v("media/b2b-row/hero.mp4", "media/b2b-row/hero.jpg"),
+    filmLast: true,
     films: [{ title: "Page walkthrough", src: "media/b2b-row/walkthrough.mp4", poster: "media/b2b-row/about.jpg", silent: true }],
     components: [
       { name: "Photo reel", wide: true, media: v("media/b2b-row/reel.mp4", "media/b2b-row/reel.jpg", "1440 / 620") },
       { name: "Center of gravity", media: v("media/b2b-row/about.mp4", "media/b2b-row/about.jpg") },
       { name: "Join us", media: v("media/b2b-row/join.mp4", "media/b2b-row/join.jpg") },
-      { name: "Footer", wide: true, media: v("media/b2b-row/footer.mp4", "media/b2b-row/footer.jpg") },
       { name: "Mobile", media: [phoneStill("media/b2b-row/m-hero.jpg", "Hero"), phoneStill("media/b2b-row/m-agenda.jpg", "Agenda"), phoneStill("media/b2b-row/m-join.jpg", "Join us")] },
     ],
     link: { label: "tima-events.vercel.app/b2b-row", href: "https://tima-events.vercel.app/b2b-row" },
