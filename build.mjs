@@ -298,6 +298,10 @@ projects.forEach((p, i) => {
     ${p.link ? `<p style="margin:18px 0 0"><a class="ext-link" href="${p.link.href}" target="_blank" rel="noopener">${esc(p.link.label)} ${ARR_NE}</a></p>` : ""}
   </div>
 
+  ${p.about ? `<section class="sec wrap" aria-label="About the project"${!p.brief && !p.move && !p.stats ? "" : " style=\"padding-bottom:0\""}>
+    <div class="bm" style="grid-template-columns:1fr"><div class="rv"><h3>About the project</h3><p style="max-width:62ch">${esc(p.about)}</p></div></div>
+  </section>` : ""}
+
   ${p.brief || p.move ? `<section class="sec wrap" aria-label="Brief and approach"${!p.stats ? ' style="padding-bottom:0"' : ""}>
     <div class="bm">
       ${p.brief ? `<div class="rv"><h3>The brief</h3><p>${esc(p.brief)}</p></div>` : ""}
