@@ -16,6 +16,7 @@
 // components     [{ name, media }]  the pieces, shown as a grid (videos play in view)
 //                media types: video | image | site | phone | terminal, optional ratio: "1440 / 640"
 // films          [{ title, note, src, poster }] full films with sound (or embed: YouTube/Vimeo URL)
+// thumb          designed homepage cover; fades to the moving cover (or `hover`) on hover
 // featured       homepage grid, in this order. hero: true = first prompt in the hero console
 // ─────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ const phoneStill = (src, alt) => ({ type: "phone", src, alt, still: true });
 export const projects = [
   {
     slug: "b2b-row-cannes",
+    thumb: "media/b2b-row/thumb-b2b-row-at-cannes.jpg",
     title: "B2B Row at Cannes",
     kind: "web",
     client: "The Imaginarium",
@@ -58,6 +60,7 @@ export const projects = [
   },
   {
     slug: "reference-to-motion-film",
+    thumb: "media/skill-film/thumb-reference-to-motion-film.jpg",
     title: "Reference to Motion Film",
     kind: "motion",
     client: "nr/ux · Open source",
@@ -72,6 +75,7 @@ export const projects = [
   },
   {
     slug: "rootlogic",
+    thumb: "media/rootlogic/thumb-rootlogic.jpg",
     title: "Rootlogic",
     kind: "product",
     client: "Rootlogic AG · Umbu Creative",
@@ -100,6 +104,7 @@ export const projects = [
   },
   {
     slug: "sbt-website",
+    thumb: "media/sbt/thumb-sbt-website.jpg",
     title: "SBT Website",
     kind: "web",
     client: "SBT (Solutions by Text) · The Imaginarium",
@@ -132,6 +137,7 @@ export const projects = [
   },
   {
     slug: "sbt-films",
+    thumb: "media/sbt/thumb-sbt-brand-films.jpg",
     title: "SBT Brand Films",
     kind: "motion",
     client: "SBT (Solutions by Text) · The Imaginarium",
@@ -149,6 +155,7 @@ export const projects = [
   },
   {
     slug: "arthur-andrew",
+    thumb: "media/arthur-andrew/thumb-arthur-andrew-medical.jpg",
     title: "Arthur Andrew Medical",
     kind: "product",
     client: "Arthur Andrew Medical · Zion & Zion",
@@ -173,6 +180,7 @@ export const projects = [
   },
   {
     slug: "driftly",
+    thumb: "media/driftly/thumb-driftly.jpg",
     title: "Driftly",
     kind: "product",
     client: "Personal product",
@@ -189,6 +197,7 @@ export const projects = [
   },
   {
     slug: "mint",
+    thumb: "media/mint/thumb-mint-ai-hero.jpg",
     title: "MINT AI Hero",
     kind: "web",
     client: "MINT AI · The Imaginarium",
@@ -228,6 +237,7 @@ export const projects = [
   },
   {
     slug: "ssg-homepage",
+    thumb: "media/ssg-homepage/thumb-solid-state-group.jpg",
     title: "Solid State Group",
     kind: "web",
     client: "Solid State Group · The Imaginarium",
@@ -257,6 +267,7 @@ export const projects = [
   },
   {
     slug: "high-tide-pools",
+    thumb: "media/high-tide-pools/thumb-high-tide-pools.jpg",
     title: "High Tide Pools",
     kind: "web",
     client: "High Tide Pools · Hardpart Media",
@@ -282,6 +293,8 @@ export const projects = [
   },
   {
     slug: "lanco",
+    thumb: "media/lanco/thumb-lanco-brand-campaigns.jpg",
+    hover: v("media/lanco/hover.mp4", "media/lanco/hover.jpg"),
     title: "Lanco Brand Campaigns",
     kind: "campaign",
     client: "Lanco · The Imaginarium",

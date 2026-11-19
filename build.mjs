@@ -139,7 +139,7 @@ const coverOf = (p, b, o = {}) => media(p.cover, b, { host: hostOf(p, p.cover), 
 function card(p, b) {
   const tag = p.award ? `<span class="chip blue">${esc(p.award.split(" · ")[0])}</span>` : p.status ? `<span class="chip">${esc(p.status)}</span>` : "";
   return `<a class="card rv" href="${b}work/${p.slug}.html" data-kind="${p.kind}" data-hover data-cursor="${p.films?.length ? "Watch" : "View"}">
-    <div class="media">${coverOf(p, b, { manual: true })}<div class="tag-row"><span class="chip">${KINDS[p.kind]}</span>${tag}</div></div>
+    <div class="media${p.thumb ? " has-thumb" : ""}">${p.hover ? media(p.hover, b, { manual: true }) : coverOf(p, b, { manual: true })}${p.thumb ? `<img class="thumb" src="${b}${p.thumb}" alt="" loading="lazy">` : ""}<div class="tag-row"><span class="chip">${KINDS[p.kind]}</span>${tag}</div></div>
     <div class="card-meta"><div><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p></div></div>
   </a>`;
 }
